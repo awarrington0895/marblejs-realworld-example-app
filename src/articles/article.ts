@@ -6,8 +6,8 @@ const empty: Article = {
   title: "",
   description: "",
   body: "",
-  createdOn: fDate.create,
-  updatedAt: fDate.create,
+  createdAt: fDate.create(),
+  updatedAt: fDate.create(),
   favorited: false,
   favoritesCount: 0,
 };
@@ -17,8 +17,8 @@ interface Article {
   readonly title: string;
   readonly description: string;
   readonly body: string;
-  readonly createdOn: IO<Date>;
-  readonly updatedAt: IO<Date>;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
   readonly favorited: boolean;
   readonly favoritesCount: number;
 }
