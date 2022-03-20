@@ -9,6 +9,8 @@ const empty: Article = {
   updatedAt: fDate.create(),
   favorited: false,
   favoritesCount: 0,
+  tagList: [],
+  author: { username: "" },
 };
 
 interface Article {
@@ -20,6 +22,8 @@ interface Article {
   readonly updatedAt: Date;
   readonly favorited: boolean;
   readonly favoritesCount: number;
+  readonly tagList: string[];
+  readonly author: { username: string };
 }
 
 export { empty, Article as Type };

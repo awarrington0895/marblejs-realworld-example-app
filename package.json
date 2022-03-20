@@ -8,7 +8,7 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier 'src/**/*.ts' --write",
     "dev": "nodemon --config nodemon.json -r tsconfig-paths/register src/main.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
