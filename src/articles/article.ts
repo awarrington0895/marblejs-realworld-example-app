@@ -1,4 +1,3 @@
-import { IO } from "fp-ts/lib/IO";
 import * as fDate from "fp-ts/lib/Date";
 
 const empty: Article = {
