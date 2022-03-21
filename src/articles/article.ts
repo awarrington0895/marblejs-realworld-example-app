@@ -1,7 +1,7 @@
 import * as fDate from "fp-ts/lib/Date";
 
 const empty: Article = {
-  slug: "",
+  slug: "empty",
   title: "",
   description: "",
   body: "",

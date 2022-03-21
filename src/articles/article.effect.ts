@@ -1,13 +1,48 @@
-import { HttpEffect } from "@marblejs/http";
-import { pipe } from "rxjs";
+import { HttpEffect, HttpError, HttpStatus } from "@marblejs/http";
+import * as O from "fp-ts/lib/Option";
+import { pipe, throwError, of } from "rxjs";
 import { map, mergeMap } from "rxjs/operators";
-import { getAllArticles$ } from "./articles.db";
+import { getAllArticles$, getArticle$ } from "./articles.db";
+import * as F from 'fp-ts/lib/function';
+import { requestValidator$, t } from '@marblejs/middleware-io';
+
+const ArticleParams = t.type({
+  slug: t.string
+});
+
+type ArticleParams = t.TypeOf<typeof ArticleParams>;
+
+const validateArticleParams = requestValidator$({
+  params: ArticleParams
+});
 
 const mapToBody = () => pipe(map((x) => ({ body: x })));
 
-export const articles$: HttpEffect = (req$) =>
+const errIfEmpty = <T>() => pipe(
+  mergeMap((opt: O.Option<T>) => {
+    
+    return F.pipe(
+      opt,
+      O.map(of),
+      O.getOrElse(() => throwError(() => new HttpError('Article not found', HttpStatus.NOT_FOUND)))
+    );
+  })
+)
+
+export const articles$: HttpEffect = req$ =>
   req$.pipe(
     mergeMap(getAllArticles$),
     map((articles) => ({ articles, articlesCount: articles.length })),
     mapToBody()
   );
+
+export const article$: HttpEffect = req$ => {
+  return req$.pipe(
+    validateArticleParams,
+    map(req => req.params.slug),
+    mergeMap(getArticle$),
+    errIfEmpty(),
+    map(article => ({ article })),
+    mapToBody()
+  )
+}
