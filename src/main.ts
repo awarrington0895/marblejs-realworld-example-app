@@ -3,7 +3,7 @@ import { bodyParser$ } from "@marblejs/middleware-body";
 import { logger$ } from "@marblejs/middleware-logger";
 import { IO } from "fp-ts/lib/IO";
 import { map } from "rxjs/operators";
-import { articlesApi$ } from "./articles/articles.api";
+import { articlesApi$ } from "@conduit/articles";
 
 const api$ = r.pipe(
   r.matchPath("/"),
