@@ -8,8 +8,8 @@ const getArticles$ = r.pipe(
 );
 
 const getArticle$ = r.pipe(
-  r.matchPath('/:slug'),
-  r.matchType('GET'),
+  r.matchPath("/:slug"),
+  r.matchType("GET"),
   r.useEffect(article$)
 );
 

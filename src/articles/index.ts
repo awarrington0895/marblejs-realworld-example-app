@@ -1,1 +1,1 @@
-export { articlesApi$ } from './articles.api';
+export { articlesApi$ } from "./articles.api";
