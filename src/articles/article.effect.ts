@@ -6,6 +6,7 @@ import { getAllArticles$, getArticle$ } from "./articles.db";
 import * as F from "fp-ts/lib/function";
 import { requestValidator$, t } from "@marblejs/middleware-io";
 import { UUID } from './uuid.brand';
+import * as ArticleResponse from './article.response';
 
 const ArticleParams = t.type({
   slug: UUID
@@ -37,7 +38,7 @@ const errIfEmpty = <T>() =>
 export const articles$: HttpEffect = (req$) =>
   req$.pipe(
     mergeMap(getAllArticles$),
-    map((articles) => ({ articles, articlesCount: articles.length })),
+    map(ArticleResponse.fromArticles),
     mapToBody()
   );
 
