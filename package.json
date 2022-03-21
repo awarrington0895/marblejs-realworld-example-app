@@ -5,7 +5,8 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node src/main.ts",
-    "init-db": "ts-node -r dotenv/config init-db.ts",
+    "create-db": "ts-node -r dotenv/config db-create.ts",
+    "init-db": "ts-node -r dotenv/config db-init.ts",
     "lint": "eslint src --ext .ts",
     "format": "prettier 'src/**/*.ts' --write",
     "dev": "nodemon --config nodemon.json -r tsconfig-paths/register -r dotenv/config src/main.ts",
