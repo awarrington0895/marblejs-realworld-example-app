@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/main.ts",
+    "init-db": "ts-node -r dotenv/config init-db.ts",
     "lint": "eslint src --ext .ts",
     "format": "prettier 'src/**/*.ts' --write",
-    "dev": "nodemon --config nodemon.json -r tsconfig-paths/register src/main.ts",
+    "dev": "nodemon --config nodemon.json -r tsconfig-paths/register -r dotenv/config src/main.ts",
     "test": "jest"
   },
   "keywords": [],
@@ -19,12 +20,15 @@
     "@marblejs/middleware-body": "^4.0.3",
     "@marblejs/middleware-io": "^4.0.3",
     "@marblejs/middleware-logger": "^4.0.3",
+    "dotenv": "^16.0.0",
     "fp-ts": "^2.11.9",
+    "pg": "^8.7.3",
     "rxjs": "^7.5.5"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.21",
+    "@types/pg": "^8.6.5",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
     "@typescript-eslint/parser": "^5.15.0",
     "eslint": "^8.11.0",
