@@ -5,9 +5,10 @@ import { map, mergeMap } from "rxjs/operators";
 import { getAllArticles$, getArticle$ } from "./articles.db";
 import * as F from "fp-ts/lib/function";
 import { requestValidator$, t } from "@marblejs/middleware-io";
+import { UUID } from './uuid.brand';
 
 const ArticleParams = t.type({
-  slug: t.string,
+  slug: UUID
 });
 
 type ArticleParams = t.TypeOf<typeof ArticleParams>;
