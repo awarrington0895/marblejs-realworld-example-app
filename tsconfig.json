@@ -8,7 +8,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@conduit/articles": ["src/articles/index.ts"]
+      "@conduit/articles": ["src/articles/index.ts"],
+      "@conduit/config": ["src/config/index.ts"]
     }
   }
 }

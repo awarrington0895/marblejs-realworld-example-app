@@ -4,14 +4,9 @@ import * as Article from "./article";
 import * as O from "fp-ts/lib/Option";
 import * as A from "fp-ts/lib/Array";
 import { Pool, QueryConfig } from "pg";
+import { config } from '@conduit/config';
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || ""),
-  database: process.env.DB_NAME,
-});
+const pool = new Pool(config.db);
 
 const getAllArticles$ = (): Observable<Article.Type[]> => {
   return from(pool.query("SELECT * FROM conduit.article")).pipe(pluck("rows"));

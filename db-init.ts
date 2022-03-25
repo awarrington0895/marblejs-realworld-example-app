@@ -1,12 +1,7 @@
-import { Pool } from 'pg';
+import { Pool } from "pg";
+import { config } from "@conduit/config";
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || ''),
-  database: process.env.DB_NAME
-});
+const pool = new Pool(config.db);
 
 const createSchema = "CREATE SCHEMA IF NOT EXISTS conduit";
 
@@ -26,7 +21,6 @@ const createArticles = `CREATE TABLE IF NOT EXISTS conduit.article
   const client = await pool.connect();
 
   try {
-
     const createSchemaRes = await client.query(createSchema);
 
     console.log(createSchemaRes.rows);
@@ -37,4 +31,4 @@ const createArticles = `CREATE TABLE IF NOT EXISTS conduit.article
   } finally {
     client.release();
   }
-})().catch(err =>console.error(err.stack));
+})().catch((err) => console.error(err.stack));
