@@ -1,5 +1,5 @@
 import { combineRoutes, r } from "@marblejs/http";
-import { article$, articles$ } from "./article.effect";
+import { article$, articles$, createArticle$ } from "./article.effect";
 
 const getArticles$ = r.pipe(
   r.matchPath("/"),
@@ -13,6 +13,12 @@ const getArticle$ = r.pipe(
   r.useEffect(article$)
 );
 
+const postArticle$ = r.pipe(
+  r.matchPath('/'),
+  r.matchType('POST'),
+  r.useEffect(createArticle$)
+);
+
 export const articlesApi$ = combineRoutes("/articles", {
-  effects: [getArticles$, getArticle$],
+  effects: [getArticles$, getArticle$, postArticle$],
 });

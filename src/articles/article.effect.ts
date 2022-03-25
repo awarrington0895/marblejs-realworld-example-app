@@ -2,14 +2,28 @@ import { HttpEffect, HttpError, HttpStatus } from "@marblejs/http";
 import * as O from "fp-ts/lib/Option";
 import { pipe, throwError, of } from "rxjs";
 import { map, mergeMap } from "rxjs/operators";
-import { getAllArticles$, getArticle$ } from "./articles.db";
+import * as db from "./articles.db";
 import * as F from "fp-ts/lib/function";
 import { requestValidator$, t } from "@marblejs/middleware-io";
-import { UUID } from './uuid.brand';
-import * as ArticleResponse from './article.response';
+import { UUID } from "./uuid.brand";
+import * as ArticleResponse from "./article.response";
+import { CreateArticle } from "./create-article";
+
+const ValidCreateArticle = t.type({
+  title: t.string,
+  description: t.string,
+  body: t.string,
+  favorited: t.boolean,
+});
+
+type ValidCreateArticle = t.TypeOf<typeof ValidCreateArticle>;
+
+const validateCreateArticle = requestValidator$({
+  body: ValidCreateArticle,
+});
 
 const ArticleParams = t.type({
-  slug: UUID
+  slug: UUID,
 });
 
 type ArticleParams = t.TypeOf<typeof ArticleParams>;
@@ -37,7 +51,7 @@ const errIfEmpty = <T>() =>
 
 export const articles$: HttpEffect = (req$) =>
   req$.pipe(
-    mergeMap(getAllArticles$),
+    mergeMap(db.getAllArticles$),
     map(ArticleResponse.fromArticles),
     mapToBody()
   );
@@ -46,9 +60,17 @@ export const article$: HttpEffect = (req$) => {
   return req$.pipe(
     validateArticleParams,
     map((req) => req.params.slug),
-    mergeMap(getArticle$),
+    mergeMap(db.getArticle$),
     errIfEmpty(),
     map((article) => ({ article })),
     mapToBody()
   );
 };
+
+export const createArticle$: HttpEffect = (req$) =>
+  req$.pipe(
+    validateCreateArticle,
+    map((req) => req.body as CreateArticle),
+    mergeMap(db.createArticle$),
+    mapToBody()
+  );
