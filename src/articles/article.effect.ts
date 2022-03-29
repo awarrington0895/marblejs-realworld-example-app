@@ -10,10 +10,11 @@ import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
 
 const ValidCreateArticle = t.type({
-  title: t.string,
-  description: t.string,
-  body: t.string,
-  favorited: t.boolean,
+  article: t.type({
+    title: t.string,
+    description: t.string,
+    body: t.string
+  })
 });
 
 type ValidCreateArticle = t.TypeOf<typeof ValidCreateArticle>;

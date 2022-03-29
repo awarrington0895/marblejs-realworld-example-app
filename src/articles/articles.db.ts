@@ -9,6 +9,8 @@ import { CreateArticle } from "./create-article";
 
 const pool = new Pool(config.db);
 
+const tableName = 'conduit.article';
+
 const getAllArticles$ = (): Observable<Article.Type[]> => {
   return from(pool.query("SELECT * FROM conduit.article")).pipe(pluck("rows"));
 };
@@ -31,9 +33,11 @@ const getArticle$ = (slug: string): Observable<O.Option<Article.Type>> =>
   defer(() => findArticle$(slug));
 
 const createArticle$ = (article: CreateArticle): Observable<Article.Type> => {
+  const { article: { title, description, body }} = article;
+
   const query: QueryConfig = {
-    text: "INSERT INTO (title, description, body, favorited) VALUES ($1, $2, $3, $4)",
-    values: [article.title, article.description, article.body, article.favorited]
+    text: `INSERT INTO ${tableName} (title, description, body) VALUES ($1, $2, $3)`,
+    values: [title, description, body]
   };
 
   const queryResult = from(pool.query(query));

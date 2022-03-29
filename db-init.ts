@@ -11,9 +11,9 @@ const createArticles = `CREATE TABLE IF NOT EXISTS conduit.article
     title text COLLATE pg_catalog."default" NOT NULL,
     description text COLLATE pg_catalog."default" NOT NULL,
     body text COLLATE pg_catalog."default" NOT NULL,
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
-    favorited boolean NOT NULL
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    favorited boolean NOT NULL DEFAULT FALSE
 )
 `;
 
