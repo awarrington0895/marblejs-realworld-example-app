@@ -8,7 +8,7 @@ import { pipe } from "fp-ts/lib/function";
 
 const prisma = new PrismaClient();
 
-const castTo = <T>() => pipe(map((val) => val as T));
+const castTo = <T>() => pipe(map(val => val as T));
 
 const getAllArticles$ = (): Observable<Article.Type[]> => {
   return defer(() =>
