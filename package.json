@@ -10,7 +10,8 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier 'src/**/*.ts' --write",
     "dev": "nodemon --config nodemon.json -r tsconfig-paths/register -r dotenv/config src/main.ts",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky install"
   },
   "keywords": [],
   "author": "",
@@ -38,7 +39,9 @@
     "eslint": "^8.11.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^7.0.4",
     "jest": "^27.5.1",
+    "lint-staged": "^12.3.7",
     "node": "^17.7.1",
     "nodemon": "^2.0.15",
     "prisma": "^3.11.1",
@@ -46,5 +49,8 @@
     "ts-node": "^10.7.0",
     "tsconfig-paths": "^3.14.0",
     "typescript": "^4.6.2"
+  },
+  "lint-staged": {
+    "*.ts": ["eslint --cache --fix", "prettier 'src/**/*.ts' --write"] 
   }
 }
