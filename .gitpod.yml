@@ -26,8 +26,17 @@ tasks:
       npm install &&
       docker-compose up -d &&
       cat .env.sample > .env &&
-      gp await-port 5432 &&
+      gp sync-done prep
+
+  - name: Migrate
+    init: |
+      gp await-port 5432
       npm run db:migrate
+      gp sync-done migrate
+
+  - name: Server
+    init: |
+      gp sync-await migrate
     command: npm run dev
 
 vscode:
