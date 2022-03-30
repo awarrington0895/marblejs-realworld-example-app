@@ -26,6 +26,7 @@ tasks:
       npm install &&
       docker-compose up -d &&
       cat .env.sample > .env &&
+      gp await-port 5432 &&
       npm run db:migrate
     command: npm run dev
 
