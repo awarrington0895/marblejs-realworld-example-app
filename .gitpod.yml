@@ -1,27 +1,32 @@
 tasks:
-  - name: Dependencies
+  # - name: Dependencies
+  #   init: |
+  #     npm install &&
+  #     gp sync-done install
+
+  # - name: Database
+  #   init: |
+  #     docker-compose up -d &&
+  #     gp sync-await install &&
+  #     npm run db:migrate &&
+  #     gp sync-done database
+
+  # - name: Local Env
+  #   command: |
+  #     echo .env.sample > .env &&
+  #     gp sync-done local-env
+
+  # - name: Server
+  #   init: |
+  #     gp sync-await database &&
+  #     gp sync-await local-env
+  #   command: npm run dev
+  - name: Prep
     init: |
       npm install &&
-      gp sync-done install
-
-  - name: Database
-    init: |
       docker-compose up -d &&
-      gp sync-await install &&
-      npm run db:migrate &&
-      gp sync-done database
-
-
-  - name: Local Env
-    command: |
-      echo .env.sample > .env &&
-      gp sync-done local-env
-
-
-  - name: Server
-    init: |
-      gp sync-await database &&
-      gp sync-await local-env
+      cat .env.sample > .env &&
+      npm run db:migrate
     command: npm run dev
 
 vscode:
