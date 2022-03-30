@@ -8,7 +8,7 @@ import { articlesApi$ } from "@conduit/articles";
 const api$ = r.pipe(
   r.matchPath("/"),
   r.matchType("GET"),
-  r.useEffect((req$) => req$.pipe(map(() => ({ body: "Hello, world!" }))))
+  r.useEffect(req$ => req$.pipe(map(() => ({ body: "Hello, world!" }))))
 );
 
 const middlewares = [logger$(), bodyParser$()];

@@ -34,7 +34,7 @@ const validateArticleParams = requestValidator$({
   params: ArticleParams,
 });
 
-const mapToBody = () => pipe(map((x) => ({ body: x })));
+const mapToBody = () => pipe(map(x => ({ body: x })));
 
 const errIfEmpty = <T>() =>
   pipe(
@@ -51,29 +51,29 @@ const errIfEmpty = <T>() =>
     })
   );
 
-export const articles$: HttpEffect = (req$) =>
+export const articles$: HttpEffect = req$ =>
   req$.pipe(
     mergeMap(db.getAllArticles$),
     map(ArticleResponse.fromArticles),
     mapToBody()
   );
 
-export const article$: HttpEffect = (req$) => {
+export const article$: HttpEffect = req$ => {
   return req$.pipe(
     validateArticleParams,
-    map((req) => req.params.slug),
+    map(req => req.params.slug),
     mergeMap(db.getArticle$),
     errIfEmpty(),
-    map((article) => ({ article })),
+    map(article => ({ article })),
     mapToBody()
   );
 };
 
-export const createArticle$: HttpEffect = (req$) =>
+export const createArticle$: HttpEffect = req$ =>
   req$.pipe(
     validateCreateArticle,
-    map((req) => req.body as CreateArticle),
+    map(req => req.body as CreateArticle),
     mergeMap(db.createArticle$),
-    map((createdArticle) => ({ article: createdArticle })),
+    map(createdArticle => ({ article: createdArticle })),
     mapToBody()
   );
