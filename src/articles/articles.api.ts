@@ -14,8 +14,8 @@ const getArticle$ = r.pipe(
 );
 
 const postArticle$ = r.pipe(
-  r.matchPath('/'),
-  r.matchType('POST'),
+  r.matchPath("/"),
+  r.matchType("POST"),
   r.useEffect(createArticle$)
 );
 

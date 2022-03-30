@@ -5,7 +5,7 @@ const pool = new Pool(config.db);
 
 const createSchema = "CREATE SCHEMA IF NOT EXISTS conduit";
 
-const createArticles = `CREATE TABLE IF NOT EXISTS conduit.article
+const createArticles = `CREATE TABLE IF NOT EXISTS conduit."Article"
 (
     slug uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     title text COLLATE pg_catalog."default" NOT NULL,
@@ -13,6 +13,7 @@ const createArticles = `CREATE TABLE IF NOT EXISTS conduit.article
     body text COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "tagList" text[] COLLATE pg_catalog."default" NOT NULL DEFAULT array[]::text[],
     favorited boolean NOT NULL DEFAULT FALSE
 )
 `;
@@ -25,9 +26,11 @@ const createArticles = `CREATE TABLE IF NOT EXISTS conduit.article
 
     console.log(createSchemaRes.rows);
 
+
     const createArticlesRes = await client.query(createArticles);
 
     console.log(createArticlesRes.rows);
+
   } finally {
     client.release();
   }

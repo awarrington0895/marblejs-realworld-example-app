@@ -8,13 +8,14 @@ import { requestValidator$, t } from "@marblejs/middleware-io";
 import { UUID } from "./uuid.brand";
 import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
+import { create } from "domain";
 
 const ValidCreateArticle = t.type({
   article: t.type({
     title: t.string,
     description: t.string,
-    body: t.string
-  })
+    body: t.string,
+  }),
 });
 
 type ValidCreateArticle = t.TypeOf<typeof ValidCreateArticle>;
@@ -73,5 +74,6 @@ export const createArticle$: HttpEffect = (req$) =>
     validateCreateArticle,
     map((req) => req.body as CreateArticle),
     mergeMap(db.createArticle$),
+    map((createdArticle) => ({ article: createdArticle })),
     mapToBody()
   );

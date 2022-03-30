@@ -12,7 +12,7 @@ const empty: ArticleResponse = {
 
 const fromArticles = (articles: Article.Type[]): ArticleResponse => ({
   articles,
-  articlesCount: articles.length
+  articlesCount: articles.length,
 });
 
 export { empty, fromArticles };

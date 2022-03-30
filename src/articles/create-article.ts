@@ -4,5 +4,6 @@ export interface CreateArticle {
     readonly description: string;
     readonly body: string;
     readonly favorited: boolean;
-  }
+    readonly tagList: string[];
+  };
 }
