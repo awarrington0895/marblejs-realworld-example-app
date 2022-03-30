@@ -9,7 +9,8 @@
     "baseUrl": ".",
     "paths": {
       "@conduit/articles": ["src/articles/index.ts"],
-      "@conduit/config": ["src/config/index.ts"]
+      "@conduit/config": ["src/config/index.ts"],
+      "@conduit/db": ["src/db/index.ts"]
     }
   }
 }

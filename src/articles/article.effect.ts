@@ -1,6 +1,12 @@
-import { HttpEffect, HttpError, HttpStatus } from "@marblejs/http";
+import {
+  HttpEffect,
+  HttpError,
+  HttpRequest,
+  HttpServer,
+  HttpStatus,
+} from "@marblejs/http";
 import * as O from "fp-ts/lib/Option";
-import { pipe, throwError, of } from "rxjs";
+import { pipe, throwError, of, SchedulerLike } from "rxjs";
 import { map, mergeMap } from "rxjs/operators";
 import * as db from "./articles.db";
 import * as F from "fp-ts/lib/function";
@@ -8,7 +14,8 @@ import { requestValidator$, t } from "@marblejs/middleware-io";
 import { UUID } from "./uuid.brand";
 import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
-import { create } from "domain";
+import { PrismaConnectionToken } from "@conduit/db";
+import { EffectContext, useContext } from "@marblejs/core";
 
 const ValidCreateArticle = t.type({
   article: t.type({
@@ -51,29 +58,43 @@ const errIfEmpty = <T>() =>
     })
   );
 
-export const articles$: HttpEffect = req$ =>
+export const articles$: HttpEffect = (
+  req$,
+  ctx: EffectContext<HttpServer, SchedulerLike>
+) =>
   req$.pipe(
-    mergeMap(db.getAllArticles$),
+    mergeMap(
+      F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.getAllArticles$)
+    ),
     map(ArticleResponse.fromArticles),
     mapToBody()
   );
 
-export const article$: HttpEffect = req$ => {
-  return req$.pipe(
+export const article$: HttpEffect = (
+  req$,
+  ctx: EffectContext<HttpServer, SchedulerLike>
+) =>
+  req$.pipe(
     validateArticleParams,
     map(req => req.params.slug),
-    mergeMap(db.getArticle$),
+    mergeMap(
+      F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.getArticle$)
+    ),
     errIfEmpty(),
     map(article => ({ article })),
     mapToBody()
   );
-};
 
-export const createArticle$: HttpEffect = req$ =>
+export const createArticle$: HttpEffect = (
+  req$,
+  ctx: EffectContext<HttpServer, SchedulerLike>
+) =>
   req$.pipe(
     validateCreateArticle,
     map(req => req.body as CreateArticle),
-    mergeMap(db.createArticle$),
+    mergeMap(
+      F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.createArticle$)
+    ),
     map(createdArticle => ({ article: createdArticle })),
     mapToBody()
   );
