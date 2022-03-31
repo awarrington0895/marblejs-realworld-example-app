@@ -31,3 +31,5 @@ vscode:
   extensions:
     - Prisma.prisma
     - esbenp.prettier-vscode
+    - rangav.vscode-thunder-client
+    - dbaeumer.vscode-eslint
