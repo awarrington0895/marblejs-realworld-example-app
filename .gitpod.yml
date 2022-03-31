@@ -1,6 +1,10 @@
 tasks:
   - name: Prep
-    init: npm install
+    init: |
+      npm install &&
+      npm install -g ts-node &&
+      ts-node init.ts
+    command: npm run dev
 
 vscode:
   extensions:
