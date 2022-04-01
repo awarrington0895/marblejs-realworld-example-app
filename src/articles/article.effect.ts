@@ -1,10 +1,4 @@
-import {
-  HttpEffect,
-  HttpError,
-  HttpRequest,
-  HttpServer,
-  HttpStatus,
-} from "@marblejs/http";
+import { HttpEffect, HttpError, HttpServer, HttpStatus } from "@marblejs/http";
 import * as O from "fp-ts/lib/Option";
 import { pipe, throwError, of, SchedulerLike } from "rxjs";
 import { map, mergeMap } from "rxjs/operators";

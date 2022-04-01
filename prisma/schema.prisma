@@ -8,7 +8,8 @@ datasource db {
 }
 
 model Article {
-  slug        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          Int      @id @default(autoincrement()) 
+  slug        String   @unique
   title       String
   description String
   body        String

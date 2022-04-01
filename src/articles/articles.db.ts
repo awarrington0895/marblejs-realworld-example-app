@@ -5,6 +5,7 @@ import * as O from "fp-ts/lib/Option";
 import { CreateArticle } from "./create-article";
 import { pipe } from "fp-ts/lib/function";
 import { PrismaClient } from "@prisma/client";
+import slugify from "slugify";
 
 const castTo = <T>() => pipe(map(val => val as T));
 
@@ -43,12 +44,16 @@ const createArticle$ =
       prisma.article.create({
         data: {
           title,
+          slug: slugify(title),
           description,
           body,
           tagList,
         },
       })
-    ).pipe(castTo<Article.Type>());
+    ).pipe(
+      map(({ id, ...article }) => article),
+      castTo<Article.Type>()
+    );
   };
 
 export { getAllArticles$, getArticle$, createArticle$ };

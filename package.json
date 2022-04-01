@@ -26,6 +26,7 @@
     "fp-ts": "^2.11.9",
     "pg": "^8.7.3",
     "rxjs": "^7.5.5",
+    "slugify": "^1.6.5",
     "validator": "^13.7.0"
   },
   "devDependencies": {
@@ -50,6 +51,9 @@
     "typescript": "^4.6.2"
   },
   "lint-staged": {
-    "*.ts": ["eslint --cache --fix", "prettier --write"] 
+    "*.ts": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ]
   }
 }
