@@ -5,6 +5,7 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "ts-node src/main.ts",
+    "build": "tsc --build",
     "db:migrate": "prisma migrate dev",
     "lint": "eslint src --ext .ts",
     "format": "prettier 'src/**/*.ts' --write",

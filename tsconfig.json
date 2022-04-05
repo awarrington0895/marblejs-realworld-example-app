@@ -7,6 +7,7 @@
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": ".",
+    "outDir": "dist",
     "paths": {
       "@conduit/articles": ["src/articles/index.ts"],
       "@conduit/db": ["src/db/index.ts"]
