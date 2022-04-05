@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Article {
-  id          Int      @id @default(autoincrement()) 
+  id          Int      @id @default(autoincrement())
   slug        String   @unique
   title       String
   description String
@@ -17,4 +17,14 @@ model Article {
   updatedAt   DateTime @default(now()) @db.Timestamptz(6)
   tagList     String[]
   favorited   Boolean  @default(false)
+  author      User     @relation("UserArticles", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    Int
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  username String    @unique
+  password String
+  articles Article[] @relation("UserArticles")
 }

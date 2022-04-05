@@ -39,6 +39,11 @@ const createArticle$ =
           description,
           body,
           tagList,
+          author: {
+            connect: {
+              id: 1,
+            },
+          },
         },
       })
     ).pipe(map(Article.fromArticleModel));
