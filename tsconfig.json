@@ -10,7 +10,8 @@
     "outDir": "dist",
     "paths": {
       "@conduit/articles": ["src/articles/index.ts"],
-      "@conduit/db": ["src/db/index.ts"]
+      "@conduit/db": ["src/db/index.ts"],
+      "@conduit/users": ["src/users/index.ts"]
     }
   }
 }
