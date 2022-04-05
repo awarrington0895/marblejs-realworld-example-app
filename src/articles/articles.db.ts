@@ -1,4 +1,4 @@
-import { defer, from, Observable } from "rxjs";
+import { defer, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import * as Article from "./article";
 import * as O from "fp-ts/lib/Option";
@@ -8,29 +8,21 @@ import slugify from "slugify";
 
 const getAllArticles$ =
   (prisma: PrismaClient) => (): Observable<Article.Type[]> => {
-    return defer(() =>
-      from(prisma.article.findMany()).pipe(
-        map(models => models.map(Article.fromArticleModel))
-      )
+    return defer(() => prisma.article.findMany()).pipe(
+      map(models => models.map(Article.fromArticleModel))
     );
   };
 
-const findArticle$ =
+const getArticle$ =
   (prisma: PrismaClient) =>
-  (slug: string): Observable<O.Option<Article.Type>> => {
-    return from(
+  (slug: string): Observable<O.Option<Article.Type>> =>
+    defer(() =>
       prisma.article.findUnique({
         where: {
           slug,
         },
       })
     ).pipe(map(Article.fromNullableArticleModel));
-  };
-
-const getArticle$ =
-  (prisma: PrismaClient) =>
-  (slug: string): Observable<O.Option<Article.Type>> =>
-    defer(() => findArticle$(prisma)(slug));
 
 const createArticle$ =
   (prisma: PrismaClient) =>
@@ -39,7 +31,7 @@ const createArticle$ =
       article: { title, description, body, tagList },
     } = article;
 
-    return from(
+    return defer(() =>
       prisma.article.create({
         data: {
           title,
