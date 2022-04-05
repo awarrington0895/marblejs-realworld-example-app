@@ -5,7 +5,6 @@ import { map, mergeMap } from "rxjs/operators";
 import * as db from "./articles.db";
 import * as F from "fp-ts/lib/function";
 import { requestValidator$, t } from "@marblejs/middleware-io";
-import { UUID } from "./uuid.brand";
 import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
 import { PrismaConnectionToken } from "@conduit/db";
@@ -17,7 +16,7 @@ const validateCreateArticle = requestValidator$({
 
 const validateArticleParams = requestValidator$({
   params: t.type({
-    slug: UUID,
+    slug: t.string,
   }),
 });
 
