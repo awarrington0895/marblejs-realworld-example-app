@@ -1,4 +1,7 @@
 import * as fDate from "fp-ts/lib/Date";
+import * as O from "fp-ts/lib/Option";
+import { Article as ArticleModel } from "@prisma/client";
+import { pipe } from "fp-ts/lib/function";
 
 const empty: Article = {
   slug: "empty",
@@ -10,7 +13,6 @@ const empty: Article = {
   favorited: false,
   favoritesCount: 0,
   tagList: [],
-  author: { username: "" },
 };
 
 interface Article {
@@ -23,7 +25,25 @@ interface Article {
   readonly favorited: boolean;
   readonly favoritesCount: number;
   readonly tagList: string[];
-  readonly author: { username: string };
 }
 
-export { empty, Article as Type };
+const fromArticleModel = (model: ArticleModel): Article => {
+  return {
+    slug: model.slug,
+    title: model.title,
+    description: model.description,
+    body: model.body,
+    createdAt: model.createdAt,
+    updatedAt: model.updatedAt,
+    favorited: model.favorited,
+    tagList: model.tagList,
+  } as Article;
+};
+
+const fromNullableArticleModel = (
+  model: ArticleModel | null
+): O.Option<Article> => {
+  return pipe(O.fromNullable(model), O.map(fromArticleModel));
+};
+
+export { empty, Article as Type, fromNullableArticleModel, fromArticleModel };

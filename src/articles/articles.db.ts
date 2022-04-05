@@ -3,16 +3,15 @@ import { map } from "rxjs/operators";
 import * as Article from "./article";
 import * as O from "fp-ts/lib/Option";
 import { CreateArticle } from "./create-article";
-import { pipe } from "fp-ts/lib/function";
 import { PrismaClient } from "@prisma/client";
 import slugify from "slugify";
-
-const castTo = <T>() => pipe(map(val => val as T));
 
 const getAllArticles$ =
   (prisma: PrismaClient) => (): Observable<Article.Type[]> => {
     return defer(() =>
-      from(prisma.article.findMany()).pipe(castTo<Article.Type[]>())
+      from(prisma.article.findMany()).pipe(
+        map(models => models.map(Article.fromArticleModel))
+      )
     );
   };
 
@@ -25,7 +24,7 @@ const findArticle$ =
           slug,
         },
       })
-    ).pipe(castTo<Article.Type>(), map(O.fromNullable));
+    ).pipe(map(Article.fromNullableArticleModel));
   };
 
 const getArticle$ =
@@ -50,10 +49,7 @@ const createArticle$ =
           tagList,
         },
       })
-    ).pipe(
-      map(({ id, ...article }) => article),
-      castTo<Article.Type>()
-    );
+    ).pipe(map(Article.fromArticleModel));
   };
 
 export { getAllArticles$, getArticle$, createArticle$ };
