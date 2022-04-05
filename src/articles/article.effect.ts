@@ -15,14 +15,10 @@ const validateCreateArticle = requestValidator$({
   body: CreateArticle,
 });
 
-const ArticleParams = t.type({
-  slug: UUID,
-});
-
-type ArticleParams = t.TypeOf<typeof ArticleParams>;
-
 const validateArticleParams = requestValidator$({
-  params: ArticleParams,
+  params: t.type({
+    slug: UUID,
+  }),
 });
 
 const mapToBody = () => pipe(map(x => ({ body: x })));
