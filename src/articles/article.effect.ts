@@ -11,18 +11,8 @@ import { CreateArticle } from "./create-article";
 import { PrismaConnectionToken } from "@conduit/db";
 import { EffectContext, useContext } from "@marblejs/core";
 
-const ValidCreateArticle = t.type({
-  article: t.type({
-    title: t.string,
-    description: t.string,
-    body: t.string,
-  }),
-});
-
-type ValidCreateArticle = t.TypeOf<typeof ValidCreateArticle>;
-
 const validateCreateArticle = requestValidator$({
-  body: ValidCreateArticle,
+  body: CreateArticle,
 });
 
 const ArticleParams = t.type({

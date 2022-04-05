@@ -1,9 +1,12 @@
-export interface CreateArticle {
-  readonly article: {
-    readonly title: string;
-    readonly description: string;
-    readonly body: string;
-    readonly favorited: boolean;
-    readonly tagList: string[];
-  };
-}
+import { t } from "@marblejs/middleware-io";
+
+export const CreateArticle = t.type({
+  article: t.type({
+    title: t.string,
+    description: t.string,
+    body: t.string,
+    tagList: t.array(t.string),
+  }),
+});
+
+export type CreateArticle = t.TypeOf<typeof CreateArticle>;
