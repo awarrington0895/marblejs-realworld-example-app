@@ -11,9 +11,7 @@ const createUser$ =
       user: { username, email, password },
     } = user;
 
-    const hash$ = defer(() => bcrypt.hash(password, 10));
-
-    return hash$.pipe(
+    return defer(() => bcrypt.hash(password, 10)).pipe(
       mergeMap(hash =>
         from(
           prisma.user.create({
