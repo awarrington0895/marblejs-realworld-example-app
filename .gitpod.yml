@@ -21,7 +21,10 @@ ports:
 
 tasks:
   - name: Prep
-    init: npm install
+    init: |
+      npm install &&
+      docker-compose up -d &&
+      cat .env.sample > .env
 
 vscode:
   extensions:
