@@ -1,6 +1,7 @@
 import { PrismaClient, User } from "@prisma/client";
-import { Observable, defer } from "rxjs";
+import { Observable, defer, from, mergeMap } from "rxjs";
 import { CreateUser } from "./create-user";
+import bcrypt from "bcryptjs";
 
 const createUser$ =
   (prisma: PrismaClient) =>
@@ -9,14 +10,20 @@ const createUser$ =
       user: { username, email, password },
     } = user;
 
-    return defer(() =>
-      prisma.user.create({
-        data: {
-          username,
-          email,
-          password,
-        },
-      })
+    const hash$ = defer(() => bcrypt.hash(password, 10));
+
+    return hash$.pipe(
+      mergeMap(hash =>
+        from(
+          prisma.user.create({
+            data: {
+              username,
+              email,
+              password: hash,
+            },
+          })
+        )
+      )
     );
   };
 
