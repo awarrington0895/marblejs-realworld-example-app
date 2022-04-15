@@ -1,11 +1,22 @@
 import { combineRoutes, r } from "@marblejs/http";
-import { mergeMap, pluck } from "rxjs/operators";
+import { map, mergeMap, pluck } from "rxjs/operators";
 import { createUser$ } from "./user.effect";
-import { authorize$ } from "@conduit/auth";
+import { authorize$, generateToken } from "@conduit/auth";
 import { useContext } from "@marblejs/core";
 import { PrismaConnectionToken } from "@conduit/db";
 import * as db from "./users.db";
 import { errIfEmpty, mapToBody } from "@conduit/util";
+import * as F from "fp-ts/function";
+import { User } from "@prisma/client";
+import { UserDto } from "./user.dto";
+
+const toUserDto = (user: User): UserDto => ({
+  user: {
+    email: user.email,
+    username: user.username,
+    token: generateToken({ id: user.id }),
+  },
+});
 
 const getCurrentUser$ = r.pipe(
   r.matchPath("/user"),
@@ -15,9 +26,10 @@ const getCurrentUser$ = r.pipe(
     const connection = useContext(PrismaConnectionToken)(ctx.ask);
 
     return req$.pipe(
-      pluck("user"),
-      mergeMap(user => db.findById$(connection)(user.id)),
+      pluck("user", "id"),
+      mergeMap(F.pipe(connection, db.findById$)),
       errIfEmpty(),
+      map(toUserDto),
       mapToBody()
     );
   })
