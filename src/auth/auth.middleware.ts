@@ -1,8 +1,7 @@
 import { of } from "rxjs";
+import config from "./config";
 
 import { authorize$ as jwt$ } from "@marblejs-contrib/middleware-jwt";
-
-const config = { secret: "supersecret" };
 
 const verifyPayload$ = (payload: any) => of(payload);
 

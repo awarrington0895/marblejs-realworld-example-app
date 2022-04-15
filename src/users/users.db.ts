@@ -1,8 +1,20 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import { Observable, defer, from, mergeMap } from "rxjs";
+import { map } from "rxjs/operators";
 import { CreateUser } from "./create-user";
 import bcrypt from "bcryptjs";
 import { RegisteredUser } from "./registered-user";
+import * as O from "fp-ts/Option";
+
+const findById$ =
+  (prisma: PrismaClient) =>
+  (id: number): Observable<O.Option<User>> => {
+    return defer(() =>
+      prisma.user.findUnique({
+        where: { id },
+      })
+    ).pipe(map(O.fromNullable));
+  };
 
 const createUser$ =
   (prisma: PrismaClient) =>
@@ -30,4 +42,4 @@ const createUser$ =
     );
   };
 
-export { createUser$ };
+export { createUser$, findById$ };
