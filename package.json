@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@marblejs-contrib/middleware-jwt": "^1.0.1",
     "@marblejs/core": "^4.0.3",
     "@marblejs/http": "^4.0.3",
     "@marblejs/middleware-body": "^4.0.3",

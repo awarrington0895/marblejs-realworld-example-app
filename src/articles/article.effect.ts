@@ -1,7 +1,7 @@
 import { HttpEffect, HttpError, HttpServer, HttpStatus } from "@marblejs/http";
 import * as O from "fp-ts/lib/Option";
 import { pipe, throwError, of, SchedulerLike } from "rxjs";
-import { map, mergeMap } from "rxjs/operators";
+import { map, mergeMap, tap } from "rxjs/operators";
 import * as db from "./articles.db";
 import * as F from "fp-ts/lib/function";
 import { requestValidator$, t } from "@marblejs/middleware-io";
@@ -9,18 +9,13 @@ import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
 import { PrismaConnectionToken } from "@conduit/db";
 import { EffectContext, useContext } from "@marblejs/core";
+import { mapToBody } from "@conduit/util";
 
-const validateCreateArticle = requestValidator$({
-  body: CreateArticle,
-});
-
-const validateArticleParams = requestValidator$({
+const validateSlug = requestValidator$({
   params: t.type({
     slug: t.string,
   }),
 });
-
-const mapToBody = () => pipe(map(x => ({ body: x })));
 
 const errIfEmpty = <T>() =>
   pipe(
@@ -54,7 +49,7 @@ export const article$: HttpEffect = (
   ctx: EffectContext<HttpServer, SchedulerLike>
 ) =>
   req$.pipe(
-    validateArticleParams,
+    validateSlug,
     map(req => req.params.slug),
     mergeMap(
       F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.getArticle$)
@@ -69,7 +64,7 @@ export const createArticle$: HttpEffect = (
   ctx: EffectContext<HttpServer, SchedulerLike>
 ) =>
   req$.pipe(
-    validateCreateArticle,
+    requestValidator$({ body: CreateArticle }),
     map(req => req.body as CreateArticle),
     mergeMap(
       F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.createArticle$)
