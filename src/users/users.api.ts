@@ -21,7 +21,7 @@ const toUserDto = (user: User): UserDto => ({
 const getCurrentUser$ = r.pipe(
   r.matchPath("/user"),
   r.matchType("GET"),
-  r.use(auth.optional$),
+  r.use(auth.required$),
   r.useEffect((req$, ctx) => {
     const connection = useContext(PrismaConnectionToken)(ctx.ask);
 

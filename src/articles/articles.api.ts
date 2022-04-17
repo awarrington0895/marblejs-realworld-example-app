@@ -3,10 +3,12 @@ import { useContext } from "@marblejs/core";
 import { combineRoutes, r } from "@marblejs/http";
 import { requestValidator$, t } from "@marblejs/middleware-io";
 import { map, mergeMap } from "rxjs/operators";
-import { articles$, createArticle$ } from "./article.effect";
 import * as F from "fp-ts/function";
 import * as db from "./articles.db";
 import { mapToBody, errIfEmpty } from "@conduit/util";
+import * as auth from "@conduit/auth";
+import * as ArticleResponse from "./article.response";
+import { CreateArticle } from "./create-article";
 
 const validateArticleParams = requestValidator$({
   params: t.type({
@@ -17,7 +19,16 @@ const validateArticleParams = requestValidator$({
 const getArticles$ = r.pipe(
   r.matchPath("/"),
   r.matchType("GET"),
-  r.useEffect(articles$)
+  r.use(auth.optional$),
+  r.useEffect((req$, ctx) =>
+    req$.pipe(
+      mergeMap(
+        F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.getAllArticles$)
+      ),
+      map(ArticleResponse.fromArticles),
+      mapToBody()
+    )
+  )
 );
 
 const getArticle$ = r.pipe(
@@ -40,7 +51,17 @@ const getArticle$ = r.pipe(
 const postArticle$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
-  r.useEffect(createArticle$)
+  r.useEffect((req$, ctx) =>
+    req$.pipe(
+      requestValidator$({ body: CreateArticle }),
+      map(req => req.body as CreateArticle),
+      mergeMap(
+        F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.createArticle$)
+      ),
+      map(createdArticle => ({ article: createdArticle })),
+      mapToBody()
+    )
+  )
 );
 
 export const articlesApi$ = combineRoutes("/articles", {
