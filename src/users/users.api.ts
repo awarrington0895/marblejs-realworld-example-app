@@ -1,6 +1,5 @@
 import { combineRoutes, r } from "@marblejs/http";
 import { map, mergeMap, pluck } from "rxjs/operators";
-import { createUser$ } from "./user.effect";
 import * as auth from "@conduit/auth";
 import { useContext } from "@marblejs/core";
 import { PrismaConnectionToken } from "@conduit/db";
@@ -9,6 +8,8 @@ import { errIfEmpty, mapToBody } from "@conduit/util";
 import * as F from "fp-ts/function";
 import { User } from "@prisma/client";
 import { UserDto } from "./user.dto";
+import { CreateUser } from "./create-user";
+import { requestValidator$ } from "@marblejs/middleware-io";
 
 const toUserDto = (user: User): UserDto => ({
   user: {
@@ -38,7 +39,17 @@ const getCurrentUser$ = r.pipe(
 const registerUser$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
-  r.useEffect(createUser$)
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+
+    return req$.pipe(
+      requestValidator$({ body: CreateUser }),
+      map(req => req.body as CreateUser),
+      mergeMap(F.pipe(prismaClient, db.createUser$)),
+      map(createdUser => ({ user: createdUser })),
+      mapToBody()
+    );
+  })
 );
 
 const usersApi$ = combineRoutes("/users", {
