@@ -1,7 +1,7 @@
 import { combineRoutes, r } from "@marblejs/http";
 import { map, mergeMap, pluck } from "rxjs/operators";
 import { createUser$ } from "./user.effect";
-import { authorize$, generateToken } from "@conduit/auth";
+import * as auth from "@conduit/auth";
 import { useContext } from "@marblejs/core";
 import { PrismaConnectionToken } from "@conduit/db";
 import * as db from "./users.db";
@@ -14,14 +14,14 @@ const toUserDto = (user: User): UserDto => ({
   user: {
     email: user.email,
     username: user.username,
-    token: generateToken({ id: user.id }),
+    token: auth.generateToken({ id: user.id }),
   },
 });
 
 const getCurrentUser$ = r.pipe(
   r.matchPath("/user"),
   r.matchType("GET"),
-  r.use(authorize$),
+  r.use(auth.optional$),
   r.useEffect((req$, ctx) => {
     const connection = useContext(PrismaConnectionToken)(ctx.ask);
 
