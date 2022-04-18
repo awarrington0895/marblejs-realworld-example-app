@@ -27,8 +27,8 @@ const getCurrentUser$ = r.pipe(
     const connection = useContext(PrismaConnectionToken)(ctx.ask);
 
     return req$.pipe(
-      pluck("user", "id"),
-      mergeMap(F.pipe(connection, db.findById$)),
+      pluck("user", "username"),
+      mergeMap(F.pipe(connection, db.findByUsername$)),
       errIfEmpty(),
       map(toUserDto),
       mapToBody()

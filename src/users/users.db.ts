@@ -16,6 +16,18 @@ const findById$ =
     ).pipe(map(O.fromNullable));
   };
 
+const findByUsername$ =
+  (prisma: PrismaClient) =>
+  (username: string): Observable<O.Option<User>> => {
+    return defer(() =>
+      prisma.user.findUnique({
+        where: {
+          username,
+        },
+      })
+    ).pipe(map(O.fromNullable));
+  };
+
 const createUser$ =
   (prisma: PrismaClient) =>
   (user: CreateUser): Observable<RegisteredUser> => {
@@ -42,4 +54,4 @@ const createUser$ =
     );
   };
 
-export { createUser$, findById$ };
+export { createUser$, findById$, findByUsername$ };
