@@ -20,48 +20,48 @@ const getArticles$ = r.pipe(
   r.matchPath("/"),
   r.matchType("GET"),
   r.use(auth.optional$),
-  r.useEffect((req$, ctx) =>
-    req$.pipe(
-      mergeMap(
-        F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.getAllArticles$)
-      ),
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+
+    return req$.pipe(
+      mergeMap(F.pipe(prismaClient, db.getAllArticles$)),
       map(ArticleResponse.fromArticles),
       mapToBody()
-    )
-  )
+    );
+  })
 );
 
 const getArticle$ = r.pipe(
   r.matchPath("/:slug"),
   r.matchType("GET"),
-  r.useEffect((req$, ctx) =>
-    req$.pipe(
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+
+    return req$.pipe(
       validateArticleParams,
       map(req => req.params.slug),
-      mergeMap(
-        F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.getArticle$)
-      ),
+      mergeMap(F.pipe(prismaClient, db.getArticle$)),
       errIfEmpty(),
       map(article => ({ article })),
       mapToBody()
-    )
-  )
+    );
+  })
 );
 
 const postArticle$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
-  r.useEffect((req$, ctx) =>
-    req$.pipe(
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+
+    return req$.pipe(
       requestValidator$({ body: CreateArticle }),
       map(req => req.body as CreateArticle),
-      mergeMap(
-        F.pipe(useContext(PrismaConnectionToken)(ctx.ask), db.createArticle$)
-      ),
+      mergeMap(F.pipe(prismaClient, db.createArticle$)),
       map(createdArticle => ({ article: createdArticle })),
       mapToBody()
-    )
-  )
+    );
+  })
 );
 
 export const articlesApi$ = combineRoutes("/articles", {
