@@ -51,13 +51,15 @@ const getArticle$ = r.pipe(
 const postArticle$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
+  r.use(auth.required$),
   r.useEffect((req$, { ask }) => {
     const prismaClient = useContext(PrismaConnectionToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: CreateArticle }),
-      map(req => req.body as CreateArticle),
-      mergeMap(F.pipe(prismaClient, db.createArticle$)),
+      mergeMap(req =>
+        db.createArticle$(prismaClient)(req.body, req.user.username)
+      ),
       map(createdArticle => ({ article: createdArticle })),
       mapToBody()
     );
