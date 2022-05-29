@@ -9,7 +9,7 @@ import { PrismaConnectionToken, PrismaConnection } from "@conduit/db";
 import { getCurrentUser$ } from "@conduit/users";
 import { usersApi$ } from "./users/users.api";
 
-const api$ = r.pipe(
+const helloWorld$ = r.pipe(
   r.matchPath("/"),
   r.matchType("GET"),
   r.useEffect(req$ => req$.pipe(map(() => ({ body: "Hello, world!" }))))
@@ -17,7 +17,7 @@ const api$ = r.pipe(
 
 const middlewares = [logger$(), bodyParser$()];
 
-const effects = [api$, articlesApi$, getCurrentUser$, usersApi$];
+const effects = [helloWorld$, articlesApi$, getCurrentUser$, usersApi$];
 
 const listener = httpListener({
   middlewares,
