@@ -30,7 +30,7 @@ const findByUsername$ =
 
 const createUser$ =
   (prisma: PrismaClient) =>
-  (user: CreateUser): Observable<RegisteredUser> => {
+  (user: CreateUser): Observable<User> => {
     const {
       user: { username, email, password },
     } = user;
@@ -43,10 +43,6 @@ const createUser$ =
               username,
               email,
               password: hash,
-            },
-            select: {
-              username: true,
-              email: true,
             },
           })
         )

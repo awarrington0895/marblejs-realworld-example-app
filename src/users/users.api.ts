@@ -46,7 +46,7 @@ const registerUser$ = r.pipe(
       requestValidator$({ body: CreateUser }),
       map(req => req.body as CreateUser),
       mergeMap(F.pipe(prismaClient, db.createUser$)),
-      map(createdUser => ({ user: createdUser })),
+      map(toUserDto),
       mapToBody()
     );
   })
