@@ -1,10 +1,11 @@
-import { PrismaClient, User } from "@prisma/client";
-import { Observable, defer, from, mergeMap } from "rxjs";
+import { Prisma, PrismaClient, User } from "@prisma/client";
+import { Observable, defer, from, mergeMap, throwError, of } from "rxjs";
 import { map } from "rxjs/operators";
 import { CreateUser } from "./create-user";
 import bcrypt from "bcryptjs";
 import { RegisteredUser } from "./registered-user";
 import * as O from "fp-ts/Option";
+import { LoginUser } from "./login-user";
 
 const findById$ =
   (prisma: PrismaClient) =>
@@ -26,6 +27,33 @@ const findByUsername$ =
         },
       })
     ).pipe(map(O.fromNullable));
+  };
+
+const findByEmail$ =
+  (prisma: PrismaClient) =>
+  (email: string): Observable<O.Option<User>> => {
+    return defer(() => prisma.user.findUnique({ where: { email } })).pipe(
+      map(O.fromNullable)
+    );
+  };
+
+const login$ =
+  (prisma: PrismaClient) =>
+  (loginUser: LoginUser): Observable<User> => {
+    const email = loginUser.user.email.toString();
+
+    return defer(() => prisma.user.findUnique({ where: { email } })).pipe(
+      mergeMap((user: User | null) => {
+        if (
+          user === null ||
+          !bcrypt.compareSync(loginUser.user.password, user?.password)
+        ) {
+          return throwError(() => new Error("Invalid username or password!"));
+        }
+
+        return of(user);
+      })
+    );
   };
 
 const createUser$ =
@@ -50,4 +78,4 @@ const createUser$ =
     );
   };
 
-export { createUser$, findById$, findByUsername$ };
+export { createUser$, findById$, findByUsername$, findByEmail$, login$ };

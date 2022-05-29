@@ -10,6 +10,7 @@ import { User } from "@prisma/client";
 import { UserDto } from "./user.dto";
 import { CreateUser } from "./create-user";
 import { requestValidator$ } from "@marblejs/middleware-io";
+import { LoginUser } from "./login-user";
 
 const toUserDto = (user: User): UserDto => ({
   user: {
@@ -52,8 +53,24 @@ const registerUser$ = r.pipe(
   })
 );
 
+const login$ = r.pipe(
+  r.matchPath("/login"),
+  r.matchType("POST"),
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+
+    return req$.pipe(
+      requestValidator$({ body: LoginUser }),
+      map(req => req.body as LoginUser),
+      mergeMap(F.pipe(prismaClient, db.login$)),
+      map(toUserDto),
+      mapToBody()
+    );
+  })
+);
+
 const usersApi$ = combineRoutes("/users", {
-  effects: [registerUser$],
+  effects: [registerUser$, login$],
 });
 
 export { getCurrentUser$, usersApi$ };
