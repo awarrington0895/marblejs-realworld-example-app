@@ -15,7 +15,7 @@ const toUserDto = (user: User): UserDto => ({
   user: {
     email: user.email,
     username: user.username,
-    token: auth.generateToken({ id: user.id }),
+    token: auth.generateToken({ id: user.id, username: user.username }),
   },
 });
 
