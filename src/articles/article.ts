@@ -1,6 +1,6 @@
 import * as fDate from "fp-ts/lib/Date";
 import * as O from "fp-ts/lib/Option";
-import { Article as ArticleModel } from "@prisma/client";
+import { Article as PrismaArticleModel } from "@prisma/client";
 import { pipe } from "fp-ts/lib/function";
 
 const empty: Article = {
@@ -13,6 +13,9 @@ const empty: Article = {
   favorited: false,
   favoritesCount: 0,
   tagList: [],
+  author: {
+    username: "",
+  },
 };
 
 interface Article {
@@ -25,7 +28,16 @@ interface Article {
   readonly favorited: boolean;
   readonly favoritesCount: number;
   readonly tagList: string[];
+  readonly author: {
+    username: string;
+  };
 }
+
+type ArticleModel = PrismaArticleModel & {
+  author?: {
+    username: string;
+  };
+};
 
 const fromArticleModel = (model: ArticleModel): Article => {
   return {
@@ -37,6 +49,7 @@ const fromArticleModel = (model: ArticleModel): Article => {
     updatedAt: model.updatedAt,
     favorited: model.favorited,
     tagList: model.tagList,
+    author: model.author,
   } as Article;
 };
 
