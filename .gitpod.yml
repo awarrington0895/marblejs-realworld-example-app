@@ -6,6 +6,16 @@ gitConfig:
   alias.co: checkout
   alias.fa: fetch --all
 
+github:
+  prebuilds:
+    # enable for the default branch (defaults to true)
+    master: false
+    # enable for all branches in this repo (defaults to false)
+    branches: false
+    # enable for pull requests coming from this repo (defaults to true)
+    pullRequests: false
+    addCheck: false
+
 ports:
   - port: 8080
     onOpen: ignore
