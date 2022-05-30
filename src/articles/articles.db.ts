@@ -5,6 +5,8 @@ import * as O from "fp-ts/lib/Option";
 import { CreateArticle } from "./create-article";
 import { PrismaClient, User } from "@prisma/client";
 import slugify from "slugify";
+import { UpdateArticle } from "./update-article";
+import { HttpError, HttpStatus } from "@marblejs/http";
 
 const includeAuthor = {
   author: {
@@ -34,6 +36,46 @@ const getArticle$ =
         include: includeAuthor,
       })
     ).pipe(map(Article.fromNullableArticleModel));
+
+const updateArticle$ =
+  (prisma: PrismaClient) =>
+  (
+    slug: string,
+    username: string,
+    updateArticle: UpdateArticle
+  ): Observable<Article.Type> => {
+    return defer(() => prisma.user.findUnique({ where: { username } })).pipe(
+      mergeMap((user: User | null) => {
+        if (user === null) {
+          return throwError(
+            () =>
+              new HttpError(
+                `User with username '${username} not found`,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                { username }
+              )
+          );
+        }
+
+        const update =
+          updateArticle.article.title !== undefined
+            ? {
+                ...updateArticle.article,
+                slug: slugify(`${updateArticle.article.title}-${user?.id}`),
+              }
+            : updateArticle.article;
+
+        return prisma.article.update({
+          data: update,
+          where: {
+            slug,
+          },
+          include: includeAuthor,
+        });
+      }),
+      map(Article.fromArticleModel)
+    );
+  };
 
 const createArticle$ =
   (prisma: PrismaClient) =>
@@ -76,4 +118,4 @@ const createArticle$ =
     );
   };
 
-export { getAllArticles$, getArticle$, createArticle$ };
+export { getAllArticles$, getArticle$, createArticle$, updateArticle$ };

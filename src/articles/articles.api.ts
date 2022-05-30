@@ -9,12 +9,11 @@ import { mapToBody, errIfEmpty } from "@conduit/util";
 import * as auth from "@conduit/auth";
 import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
+import { UpdateArticle } from "./update-article";
 
-const validateArticleParams = requestValidator$({
-  params: t.type({
-    slug: t.string,
-  }),
-});
+const ArticleParams = t.type({ slug: t.string });
+
+type ArticleParams = t.TypeOf<typeof ArticleParams>;
 
 const getArticles$ = r.pipe(
   r.matchPath("/"),
@@ -38,7 +37,7 @@ const getArticle$ = r.pipe(
     const prismaClient = useContext(PrismaConnectionToken)(ask);
 
     return req$.pipe(
-      validateArticleParams,
+      requestValidator$({ params: ArticleParams }),
       map(req => req.params.slug),
       mergeMap(F.pipe(prismaClient, db.getArticle$)),
       errIfEmpty(),
@@ -66,6 +65,28 @@ const postArticle$ = r.pipe(
   })
 );
 
+const putArticle$ = r.pipe(
+  r.matchPath("/:slug"),
+  r.matchType("PUT"),
+  r.use(auth.required$),
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+
+    return req$.pipe(
+      requestValidator$({ params: ArticleParams, body: UpdateArticle }),
+      mergeMap(req =>
+        db.updateArticle$(prismaClient)(
+          req.params.slug,
+          req.user.username,
+          req.body
+        )
+      ),
+      map(article => ({ article })),
+      mapToBody()
+    );
+  })
+);
+
 export const articlesApi$ = combineRoutes("/articles", {
-  effects: [getArticles$, getArticle$, postArticle$],
+  effects: [getArticles$, getArticle$, postArticle$, putArticle$],
 });

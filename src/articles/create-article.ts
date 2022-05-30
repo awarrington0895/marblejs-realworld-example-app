@@ -1,6 +1,6 @@
 import { t } from "@marblejs/middleware-io";
 
-export const CreateArticle = t.type({
+const _CreateArticle = t.type({
   article: t.type({
     title: t.string,
     description: t.string,
@@ -8,5 +8,7 @@ export const CreateArticle = t.type({
     tagList: t.array(t.string),
   }),
 });
+
+export const CreateArticle = t.exact(_CreateArticle);
 
 export type CreateArticle = t.TypeOf<typeof CreateArticle>;
