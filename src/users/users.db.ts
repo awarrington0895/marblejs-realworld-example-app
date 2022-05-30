@@ -1,11 +1,11 @@
-import { Prisma, PrismaClient, User } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import { Observable, defer, from, mergeMap, throwError, of } from "rxjs";
 import { map } from "rxjs/operators";
 import { CreateUser } from "./create-user";
 import bcrypt from "bcryptjs";
-import { RegisteredUser } from "./registered-user";
 import * as O from "fp-ts/Option";
 import { LoginUser } from "./login-user";
+import { HttpError, HttpStatus } from "@marblejs/http";
 
 const findById$ =
   (prisma: PrismaClient) =>
@@ -46,9 +46,16 @@ const login$ =
       mergeMap((user: User | null) => {
         if (
           user === null ||
-          !bcrypt.compareSync(loginUser.user.password, user?.password)
+          !bcrypt.compareSync(loginUser.user.password, user.password)
         ) {
-          return throwError(() => new Error("Invalid username or password!"));
+          return throwError(
+            () =>
+              new HttpError(
+                `Invalid email or password! email=${email}`,
+                HttpStatus.UNAUTHORIZED,
+                { email }
+              )
+          );
         }
 
         return of(user);
