@@ -1,7 +1,13 @@
 import { combineRoutes, r } from "@marblejs/http";
-import { map, mergeMap, pluck } from "rxjs/operators";
+import { catchError, map, mergeMap, pluck, tap } from "rxjs/operators";
 import * as auth from "@conduit/auth";
-import { useContext } from "@marblejs/core";
+import {
+  Logger,
+  LoggerLevel,
+  LoggerTag,
+  LoggerToken,
+  useContext,
+} from "@marblejs/core";
 import { PrismaConnectionToken } from "@conduit/db";
 import * as db from "./users.db";
 import { errIfEmpty, mapToBody } from "@conduit/util";
@@ -10,6 +16,8 @@ import { User } from "@prisma/client";
 import { UserDto } from "./user.dto";
 import { CreateUser } from "./create-user";
 import { requestValidator$ } from "@marblejs/middleware-io";
+import { LoginUser } from "./login-user";
+import { throwError } from "rxjs";
 
 const toUserDto = (user: User): UserDto => ({
   user: {
@@ -52,8 +60,37 @@ const registerUser$ = r.pipe(
   })
 );
 
+const login$ = r.pipe(
+  r.matchPath("/login"),
+  r.matchType("POST"),
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const logger = useContext(LoggerToken)(ask);
+
+    return req$.pipe(
+      requestValidator$({ body: LoginUser }),
+      map(req => req.body as LoginUser),
+      mergeMap(F.pipe(prismaClient, db.login$)),
+      map(toUserDto),
+      mapToBody(),
+      catchError(err => {
+        const log = logger({
+          tag: LoggerTag.CORE,
+          level: LoggerLevel.ERROR,
+          type: "login$",
+          message: err.message,
+        });
+
+        log();
+
+        return throwError(() => err);
+      })
+    );
+  })
+);
+
 const usersApi$ = combineRoutes("/users", {
-  effects: [registerUser$],
+  effects: [registerUser$, login$],
 });
 
 export { getCurrentUser$, usersApi$ };
