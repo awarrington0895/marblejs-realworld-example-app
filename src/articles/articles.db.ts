@@ -1,4 +1,4 @@
-import { defer, from, Observable, throwError, of } from "rxjs";
+import { defer, Observable, throwError, of } from "rxjs";
 import { map, mergeMap } from "rxjs/operators";
 import * as Article from "./article";
 import * as O from "fp-ts/lib/Option";
@@ -6,11 +6,21 @@ import { CreateArticle } from "./create-article";
 import { PrismaClient, User } from "@prisma/client";
 import slugify from "slugify";
 
+const includeAuthor = {
+  author: {
+    select: {
+      username: true,
+    },
+  },
+};
+
 const getAllArticles$ =
   (prisma: PrismaClient) => (): Observable<Article.Type[]> => {
-    return defer(() => prisma.article.findMany()).pipe(
-      map(models => models.map(Article.fromArticleModel))
-    );
+    return defer(() =>
+      prisma.article.findMany({
+        include: includeAuthor,
+      })
+    ).pipe(map(models => models.map(Article.fromArticleModel)));
   };
 
 const getArticle$ =
@@ -21,6 +31,7 @@ const getArticle$ =
         where: {
           slug,
         },
+        include: includeAuthor,
       })
     ).pipe(map(Article.fromNullableArticleModel));
 
@@ -57,8 +68,8 @@ const createArticle$ =
               },
             },
           },
+          include: includeAuthor,
         });
-
         return createdArticle;
       }),
       map(Article.fromArticleModel)
