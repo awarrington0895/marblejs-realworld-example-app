@@ -1,8 +1,7 @@
-import { combineRoutes, r } from "@marblejs/http";
-import { catchError, map, mergeMap, pluck, tap } from "rxjs/operators";
+import { combineRoutes, HttpError, HttpStatus, r } from "@marblejs/http";
+import { catchError, map, mergeMap, pluck } from "rxjs/operators";
 import * as auth from "@conduit/auth";
 import {
-  Logger,
   LoggerLevel,
   LoggerTag,
   LoggerToken,
@@ -17,15 +16,25 @@ import { UserDto } from "./user.dto";
 import { CreateUser } from "./create-user";
 import { requestValidator$ } from "@marblejs/middleware-io";
 import { LoginUser } from "./login-user";
-import { throwError } from "rxjs";
+import { throwError, of } from "rxjs";
+import { UpdateUser } from "./update-user";
 
-const toUserDto = (user: User): UserDto => ({
-  user: {
-    email: user.email,
-    username: user.username,
-    token: auth.generateToken({ id: user.id, username: user.username }),
-  },
-});
+const toUserDto = (user: User): UserDto => {
+  const dto: UserDto = {
+    user: {
+      email: user.email,
+      username: user.username,
+      token: auth.generateToken({ id: user.id, username: user.username }),
+      image: user.image ? user.image : "",
+    },
+  };
+
+  if (user.bio) {
+    dto.user.bio = user.bio;
+  }
+
+  return dto;
+};
 
 const getCurrentUser$ = r.pipe(
   r.matchPath("/user"),
@@ -89,8 +98,50 @@ const login$ = r.pipe(
   })
 );
 
+const updateUser$ = r.pipe(
+  r.matchPath("/user"),
+  r.matchType("PUT"),
+  r.use(auth.required$),
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const logger = useContext(LoggerToken)(ask);
+
+    return req$.pipe(
+      requestValidator$({ body: UpdateUser }),
+      mergeMap(req => {
+        if (!Object.keys(req.body.user).length) {
+          const log = logger({
+            tag: LoggerTag.HTTP,
+            level: LoggerLevel.ERROR,
+            type: "updateUser$",
+            message: `UpdateUser received contained no fields to update. UpdateUser=${req.body}`,
+          });
+
+          log();
+
+          return throwError(
+            () =>
+              new HttpError(
+                "Input must contain at least one field!",
+                HttpStatus.BAD_REQUEST,
+                { input: req.body }
+              )
+          );
+        }
+
+        return of(req);
+      }),
+      mergeMap(req =>
+        db.updateUser$(prismaClient)(req.user.username, req.body)
+      ),
+      map(toUserDto),
+      mapToBody()
+    );
+  })
+);
+
 const usersApi$ = combineRoutes("/users", {
   effects: [registerUser$, login$],
 });
 
-export { getCurrentUser$, usersApi$ };
+export { getCurrentUser$, usersApi$, updateUser$ };

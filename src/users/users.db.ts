@@ -85,4 +85,8 @@ const createUser$ =
     );
   };
 
+// const updateUser$ = (prisma: PrismaClient) => (username: string, updateUser: UpdateUser): Observable<User> => {
+
+// }
+
 export { createUser$, findById$, findByUsername$, findByEmail$, login$ };
