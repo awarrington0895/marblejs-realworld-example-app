@@ -7,6 +7,7 @@ import { PrismaClient, User } from "@prisma/client";
 import slugify from "slugify";
 import { UpdateArticle } from "./update-article";
 import { HttpError, HttpStatus } from "@marblejs/http";
+import { ArticleQueryParams } from "./article-query-params";
 
 const includeAuthor = {
   author: {
@@ -17,12 +18,24 @@ const includeAuthor = {
 };
 
 const getAllArticles$ =
-  (prisma: PrismaClient) => (): Observable<Article.Type[]> => {
-    return defer(() =>
-      prisma.article.findMany({
+  (prisma: PrismaClient) =>
+  (query?: ArticleQueryParams): Observable<Article.Type[]> => {
+    return defer(() => {
+      if (query?.author) {
+        return prisma.article.findMany({
+          where: {
+            author: {
+              username: query.author,
+            },
+          },
+          include: includeAuthor,
+        });
+      }
+
+      return prisma.article.findMany({
         include: includeAuthor,
-      })
-    ).pipe(map(models => models.map(Article.fromArticleModel)));
+      });
+    }).pipe(map(models => models.map(Article.fromArticleModel)));
   };
 
 const getArticle$ =

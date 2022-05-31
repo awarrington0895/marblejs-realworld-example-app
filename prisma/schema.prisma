@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl"]
 }
 
@@ -27,5 +27,7 @@ model User {
   email    String    @unique
   username String    @unique
   password String
+  image    String?   @default("https://api.realworld.io/images/smiley-cyrus.jpeg")
+  bio      String?
   articles Article[] @relation("UserArticles")
 }

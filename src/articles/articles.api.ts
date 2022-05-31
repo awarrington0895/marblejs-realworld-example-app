@@ -10,6 +10,7 @@ import * as auth from "@conduit/auth";
 import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
 import { UpdateArticle } from "./update-article";
+import { ArticleQueryParams } from "./article-query-params";
 
 const ArticleParams = t.type({ slug: t.string });
 
@@ -23,7 +24,8 @@ const getArticles$ = r.pipe(
     const prismaClient = useContext(PrismaConnectionToken)(ask);
 
     return req$.pipe(
-      mergeMap(F.pipe(prismaClient, db.getAllArticles$)),
+      requestValidator$({ query: ArticleQueryParams }),
+      mergeMap(req => db.getAllArticles$(prismaClient)(req.query)),
       map(ArticleResponse.fromArticles),
       mapToBody()
     );
