@@ -17,17 +17,35 @@ const includeAuthor = {
   },
 };
 
+const buildAllQuery = (query: ArticleQueryParams) => {
+  const queries = [];
+
+  if ("tag" in query) {
+    queries.push({
+      tagList: {
+        has: query.tag,
+      },
+    });
+  }
+
+  if ("author" in query) {
+    queries.push({
+      author: {
+        username: query.author,
+      },
+    });
+  }
+
+  return queries;
+};
+
 const getAllArticles$ =
   (prisma: PrismaClient) =>
   (query?: ArticleQueryParams): Observable<Article.Type[]> => {
     return defer(() => {
-      if (query?.author) {
+      if (query !== undefined && Object.keys(query).length) {
         return prisma.article.findMany({
-          where: {
-            author: {
-              username: query.author,
-            },
-          },
+          where: { AND: buildAllQuery(query) },
           include: includeAuthor,
         });
       }
