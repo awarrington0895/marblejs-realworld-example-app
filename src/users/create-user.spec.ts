@@ -1,4 +1,5 @@
-import { isRight } from "fp-ts/lib/Either";
+import "@relmify/jest-fp-ts";
+
 import { CreateUser } from "./create-user";
 
 describe("CreateUser", () => {
@@ -13,7 +14,7 @@ describe("CreateUser", () => {
 
     const result = CreateUser.decode(createUser);
 
-    expect(isRight(result)).toBe(true);
+    expect(result).toBeRight();
   });
 
   it("should enforce that email is a valid email", () => {
@@ -27,7 +28,7 @@ describe("CreateUser", () => {
 
     const result = CreateUser.decode(createUser);
 
-    expect(isRight(result)).toBe(false);
+    expect(result).toBeLeft();
   });
 
   it("should not allow an invalid model", () => {
@@ -40,6 +41,6 @@ describe("CreateUser", () => {
 
     const result = CreateUser.decode(createUser);
 
-    expect(isRight(result)).toBe(false);
+    expect(result).toBeLeft();
   });
 });
