@@ -9,11 +9,25 @@
     "baseUrl": ".",
     "outDir": "dist",
     "paths": {
-      "@conduit/articles": ["src/articles/index.ts"],
-      "@conduit/db": ["src/db/index.ts"],
-      "@conduit/users": ["src/users/index.ts"],
-      "@conduit/util": ["src/util/index.ts"],
-      "@conduit/auth": ["src/auth/index.ts"]
-    }
+      "@conduit/articles": [
+        "src/articles/index.ts"
+      ],
+      "@conduit/db": [
+        "src/db/index.ts"
+      ],
+      "@conduit/users": [
+        "src/users/index.ts"
+      ],
+      "@conduit/util": [
+        "src/util/index.ts"
+      ],
+      "@conduit/auth": [
+        "src/auth/index.ts"
+      ]
+    },
+    "types": [
+      "jest",
+      "@hirez_io/jest-single"
+    ]
   }
 }
