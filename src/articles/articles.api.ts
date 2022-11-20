@@ -76,12 +76,13 @@ const putArticle$ = r.pipe(
 
     return req$.pipe(
       requestValidator$({ params: ArticleParams, body: UpdateArticle }),
-      mergeMap(req =>
-        db.updateArticle$(prismaClient)(
-          req.params.slug,
-          req.user.username,
-          req.body
-        )
+      map(req => ({
+        slug: req.params.slug,
+        username: req.user.username,
+        updateArticle: req.body,
+      })),
+      mergeMap(({ slug, username, updateArticle }) =>
+        db.updateArticle$(prismaClient)(slug, username, updateArticle)
       ),
       map(article => ({ article })),
       mapToBody()
