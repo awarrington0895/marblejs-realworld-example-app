@@ -1,5 +1,5 @@
 import { combineRoutes, r } from "@marblejs/http";
-import { catchError, map, mergeMap, pluck, tap } from "rxjs/operators";
+import { catchError, map, mergeMap } from "rxjs/operators";
 import * as auth from "@conduit/auth";
 import {
   Logger,
@@ -36,7 +36,7 @@ const getCurrentUser$ = r.pipe(
     const connection = useContext(PrismaConnectionToken)(ctx.ask);
 
     return req$.pipe(
-      pluck("user", "username"),
+      map(req => req.user?.username),
       mergeMap(F.pipe(connection, db.findByUsername$)),
       errIfEmpty(),
       map(toUserDto),
