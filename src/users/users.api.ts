@@ -18,6 +18,7 @@ import { CreateUser } from "./create-user";
 import { requestValidator$ } from "@marblejs/middleware-io";
 import { LoginUser } from "./login-user";
 import { throwError } from "rxjs";
+import { UpdateUser } from "./update-user";
 
 const toUserDto = (user: User): UserDto => ({
   user: {
@@ -60,6 +61,28 @@ const registerUser$ = r.pipe(
   })
 );
 
+const updateUser$ = r.pipe(
+  r.matchPath("/user"),
+  r.matchType("PUT"),
+  r.use(auth.required$),
+  r.useEffect((req$, ctx) => {
+    const connection = useContext(PrismaConnectionToken)(ctx.ask);
+
+    return req$.pipe(
+      requestValidator$({ body: UpdateUser }),
+      map(req => ({
+        userId: req.user.id,
+        updateUser: req.body as UpdateUser,
+      })),
+      mergeMap(({ userId, updateUser }) =>
+        db.updateUser$(connection)(userId, updateUser)
+      ),
+      map(toUserDto),
+      mapToBody()
+    );
+  })
+);
+
 const login$ = r.pipe(
   r.matchPath("/login"),
   r.matchType("POST"),
@@ -93,4 +116,4 @@ const usersApi$ = combineRoutes("/users", {
   effects: [registerUser$, login$],
 });
 
-export { getCurrentUser$, usersApi$ };
+export { getCurrentUser$, updateUser$, usersApi$ };

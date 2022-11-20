@@ -1,1 +1,1 @@
-export { getCurrentUser$ } from "./users.api";
+export { getCurrentUser$, updateUser$, usersApi$ } from "./users.api";

@@ -1,11 +1,13 @@
+import { isDefined } from "@conduit/util";
+import { HttpError, HttpStatus } from "@marblejs/http";
 import { PrismaClient, User } from "@prisma/client";
-import { Observable, defer, from, mergeMap, throwError, of } from "rxjs";
-import { map } from "rxjs/operators";
-import { CreateUser } from "./create-user";
 import bcrypt from "bcryptjs";
 import * as O from "fp-ts/Option";
+import { defer, from, mergeMap, Observable, of, throwError } from "rxjs";
+import { map } from "rxjs/operators";
+import { CreateUser } from "./create-user";
 import { LoginUser } from "./login-user";
-import { HttpError, HttpStatus } from "@marblejs/http";
+import { UpdateUser } from "./update-user";
 
 const findById$ =
   (prisma: PrismaClient) =>
@@ -85,4 +87,47 @@ const createUser$ =
     );
   };
 
-export { createUser$, findById$, findByUsername$, findByEmail$, login$ };
+const updateUser$ =
+  (prisma: PrismaClient) =>
+  (id: number, updateUser: UpdateUser): Observable<User> => {
+    const { user } = updateUser;
+    const password = user.password;
+
+    if (isDefined(password)) {
+      return defer(() => bcrypt.hash(password, 10)).pipe(
+        mergeMap(hash =>
+          from(
+            prisma.user.update({
+              where: {
+                id,
+              },
+              data: {
+                ...user,
+                password: hash,
+              },
+            })
+          )
+        )
+      );
+    }
+
+    return defer(() =>
+      prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          ...user,
+        },
+      })
+    );
+  };
+
+export {
+  createUser$,
+  updateUser$,
+  findById$,
+  findByUsername$,
+  findByEmail$,
+  login$,
+};

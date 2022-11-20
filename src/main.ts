@@ -6,8 +6,7 @@ import { map } from "rxjs/operators";
 import { articlesApi$ } from "@conduit/articles";
 import { bindEagerlyTo } from "@marblejs/core";
 import { PrismaConnectionToken, PrismaConnection } from "@conduit/db";
-import { getCurrentUser$ } from "@conduit/users";
-import { usersApi$ } from "./users/users.api";
+import { getCurrentUser$, usersApi$, updateUser$ } from "@conduit/users";
 
 const helloWorld$ = r.pipe(
   r.matchPath("/"),
@@ -17,7 +16,13 @@ const helloWorld$ = r.pipe(
 
 const middlewares = [logger$(), bodyParser$()];
 
-const effects = [helloWorld$, articlesApi$, getCurrentUser$, usersApi$];
+const effects = [
+  helloWorld$,
+  articlesApi$,
+  getCurrentUser$,
+  usersApi$,
+  updateUser$,
+];
 
 const listener = httpListener({
   middlewares,
