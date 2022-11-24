@@ -1,6 +1,6 @@
 import { PrismaConnectionToken } from "@conduit/db";
 import { useContext } from "@marblejs/core";
-import { combineRoutes, r } from "@marblejs/http";
+import { combineRoutes, HttpStatus, r } from "@marblejs/http";
 import { requestValidator$, t } from "@marblejs/middleware-io";
 import { map, mergeMap } from "rxjs/operators";
 import * as F from "fp-ts/function";
@@ -90,6 +90,28 @@ const putArticle$ = r.pipe(
   })
 );
 
+const deleteArticle$ = r.pipe(
+  r.matchPath("/:slug"),
+  r.matchType("DELETE"),
+  r.use(auth.required$),
+  r.useEffect((req$, { ask }) => {
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
+
+    return req$.pipe(
+      requestValidator$({ params: ArticleParams }),
+      map(req => req.params.slug),
+      mergeMap(F.pipe(prismaClient, db.deleteArticle$)),
+      map(() => ({ status: HttpStatus.NO_CONTENT }))
+    );
+  })
+);
+
 export const articlesApi$ = combineRoutes("/articles", {
-  effects: [getArticles$, getArticle$, postArticle$, putArticle$],
+  effects: [
+    getArticles$,
+    getArticle$,
+    postArticle$,
+    putArticle$,
+    deleteArticle$,
+  ],
 });

@@ -149,4 +149,19 @@ const createArticle$ =
     );
   };
 
-export { getAllArticles$, getArticle$, createArticle$, updateArticle$ };
+const deleteArticle$ = (prisma: PrismaClient) => (slug: string) =>
+  defer(() =>
+    prisma.article.delete({
+      where: {
+        slug,
+      },
+    })
+  );
+
+export {
+  getAllArticles$,
+  getArticle$,
+  createArticle$,
+  updateArticle$,
+  deleteArticle$,
+};
