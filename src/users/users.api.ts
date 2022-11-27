@@ -49,7 +49,13 @@ const registerUser$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const token = PrismaConnectionToken;
+
+    const provider = useContext(token);
+
+    const ctx = useContext;
+
+    const prismaClient = provider(ask);
 
     return req$.pipe(
       requestValidator$({ body: CreateUser }),
