@@ -49,13 +49,7 @@ const registerUser$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
   r.useEffect((req$, { ask }) => {
-    const token = PrismaConnectionToken;
-
-    const provider = useContext(token);
-
-    const ctx = useContext;
-
-    const prismaClient = provider(ask);
+    const prismaClient = useContext(PrismaConnectionToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: CreateUser }),
@@ -71,8 +65,8 @@ const updateUser$ = r.pipe(
   r.matchPath("/user"),
   r.matchType("PUT"),
   r.use(auth.required$),
-  r.useEffect((req$, ctx) => {
-    const connection = useContext(PrismaConnectionToken)(ctx.ask);
+  r.useEffect((req$, { ask }) => {
+    const connection = useContext(PrismaConnectionToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: UpdateUser }),
