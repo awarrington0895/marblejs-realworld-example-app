@@ -4,21 +4,19 @@ import {
   LoggerToken,
   useContext,
 } from "@marblejs/core";
-import { requestValidator$ } from "@marblejs/middleware-io";
 import { combineRoutes, r } from "@marblejs/http";
+import { requestValidator$ } from "@marblejs/middleware-io";
+import { User } from "@prisma/client";
 import { throwError } from "rxjs";
 import { catchError, map, mergeMap } from "rxjs/operators";
-import { User } from "@prisma/client";
-import * as F from "fp-ts/function";
 
 import * as auth from "@conduit/auth";
 import { errIfEmpty, mapToBody } from "@conduit/util";
-import { PrismaConnectionToken } from "@conduit/db";
-import * as db from "./users.db";
-import { UserDto } from "./user.dto";
 import { CreateUser } from "./create-user";
 import { LoginUser } from "./login-user";
 import { UpdateUser } from "./update-user";
+import { UserDto } from "./user.dto";
+import { UserServiceToken } from "./users.service";
 
 const toUserDto = (user: User): UserDto => ({
   user: {
@@ -33,11 +31,11 @@ const getCurrentUser$ = r.pipe(
   r.matchType("GET"),
   r.use(auth.required$),
   r.useEffect((req$, ctx) => {
-    const connection = useContext(PrismaConnectionToken)(ctx.ask);
+    const userService = useContext(UserServiceToken)(ctx.ask);
 
     return req$.pipe(
       map(req => req.user?.username),
-      mergeMap(F.pipe(connection, db.findByUsername$)),
+      mergeMap(userService.findByUsername$),
       errIfEmpty(),
       map(toUserDto),
       mapToBody()
@@ -49,12 +47,12 @@ const registerUser$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const userService = useContext(UserServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: CreateUser }),
       map(req => req.body as CreateUser),
-      mergeMap(F.pipe(prismaClient, db.createUser$)),
+      mergeMap(userService.createUser$),
       map(toUserDto),
       mapToBody()
     );
@@ -66,7 +64,7 @@ const updateUser$ = r.pipe(
   r.matchType("PUT"),
   r.use(auth.required$),
   r.useEffect((req$, { ask }) => {
-    const connection = useContext(PrismaConnectionToken)(ask);
+    const userService = useContext(UserServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: UpdateUser }),
@@ -75,7 +73,7 @@ const updateUser$ = r.pipe(
         updateUser: req.body as UpdateUser,
       })),
       mergeMap(({ userId, updateUser }) =>
-        db.updateUser$(connection)(userId, updateUser)
+        userService.updateUser$(userId, updateUser)
       ),
       map(toUserDto),
       mapToBody()
@@ -87,13 +85,13 @@ const login$ = r.pipe(
   r.matchPath("/login"),
   r.matchType("POST"),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const users = useContext(UserServiceToken)(ask);
     const logger = useContext(LoggerToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: LoginUser }),
       map(req => req.body as LoginUser),
-      mergeMap(F.pipe(prismaClient, db.login$)),
+      mergeMap(users.login$),
       map(toUserDto),
       mapToBody(),
       catchError(err => {
