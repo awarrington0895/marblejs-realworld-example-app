@@ -4,116 +4,105 @@ import { createContextToken, createReader, useContext } from "@marblejs/core";
 import { HttpError, HttpStatus } from "@marblejs/http";
 import { PrismaClient, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import * as O from "fp-ts/Option";
-import { defer, mergeMap, Observable, of, throwError } from "rxjs";
+import { Option, fromNullable } from "fp-ts/Option";
+import { defer, mergeMap, Observable, of, throwError, from } from "rxjs";
 import { map } from "rxjs/operators";
 import { CreateUser } from "./create-user";
 import { LoginUser } from "./login-user";
 import { UpdateUser } from "./update-user";
 
-const mapNullable = map(O.fromNullable);
+const mapNullable = map(fromNullable);
 
-const createUserService = (prisma: PrismaClient) => ({
-  findById$(id: number): Observable<O.Option<User>> {
-    return defer(() =>
-      prisma.user.findUnique({
-        where: { id },
-      })
-    ).pipe(mapNullable);
-  },
+const createUserService = (prisma: PrismaClient) => {
+  const findBy = (search: Partial<User>) =>
+    defer(() => prisma.user.findUnique({ where: { ...search } }));
 
-  findByUsername$(username: string): Observable<O.Option<User>> {
-    return defer(() =>
-      prisma.user.findUnique({
-        where: {
-          username,
-        },
-      })
-    ).pipe(mapNullable);
-  },
+  return {
+    findById$(id: number): Observable<Option<User>> {
+      return findBy({ id }).pipe(mapNullable);
+    },
 
-  findByEmail$(email: string): Observable<O.Option<User>> {
-    return defer(() =>
-      prisma.user.findUnique({
-        where: { email },
-      })
-    ).pipe(mapNullable);
-  },
+    findByUsername$(username: string): Observable<Option<User>> {
+      return findBy({ username }).pipe(mapNullable);
+    },
 
-  login$(loginUser: LoginUser): Observable<User> {
-    const email = loginUser.user.email.toString();
+    findByEmail$(email: string): Observable<Option<User>> {
+      return findBy({ email }).pipe(mapNullable);
+    },
 
-    const user$ = defer(() => prisma.user.findUnique({ where: { email } }));
+    login$(loginUser: LoginUser): Observable<User> {
+      const email = loginUser.user.email.toString();
 
-    return user$.pipe(
-      mergeMap((user: User | null) => {
-        if (
-          user === null ||
-          !bcrypt.compareSync(loginUser.user.password, user.password)
-        ) {
-          return throwError(
-            () =>
-              new HttpError(
-                `Invalid email or password! email=${email}`,
-                HttpStatus.UNAUTHORIZED,
-                { email }
-              )
-          );
-        }
+      return findBy({ email }).pipe(
+        mergeMap((user: User | null) => {
+          if (
+            user === null ||
+            !bcrypt.compareSync(loginUser.user.password, user.password)
+          ) {
+            return throwError(
+              () =>
+                new HttpError(
+                  `Invalid email or password! email=${email}`,
+                  HttpStatus.UNAUTHORIZED,
+                  { email }
+                )
+            );
+          }
 
-        return of(user);
-      })
-    );
-  },
-
-  createUser$(user: CreateUser): Observable<User> {
-    const {
-      user: { username, email, password },
-    } = user;
-
-    return defer(() => bcrypt.hash(password, 10)).pipe(
-      mergeMap(hash =>
-        prisma.user.create({
-          data: {
-            username,
-            email,
-            password: hash,
-          },
+          return of(user);
         })
-      )
-    );
-  },
+      );
+    },
 
-  updateUser$(id: number, updateUser: UpdateUser): Observable<User> {
-    const { user } = updateUser;
-    const password = user.password;
+    createUser$(user: CreateUser): Observable<User> {
+      const {
+        user: { username, email, password },
+      } = user;
 
-    if (isDefined(password)) {
       return defer(() => bcrypt.hash(password, 10)).pipe(
         mergeMap(hash =>
-          prisma.user.update({
-            where: {
-              id,
-            },
+          prisma.user.create({
             data: {
-              ...user,
+              username,
+              email,
               password: hash,
             },
           })
         )
       );
-    }
+    },
 
-    return defer(() =>
-      prisma.user.update({
+    updateUser$(id: number, updateUser: UpdateUser): Observable<User> {
+      const { user } = updateUser;
+      const password = user.password;
+
+      const baseUpdate = {
         where: { id },
         data: {
           ...user,
         },
-      })
-    );
-  },
-});
+      };
+
+      return defer(() => {
+        if (isDefined(password)) {
+          return from(bcrypt.hash(password, 10)).pipe(
+            mergeMap(hash =>
+              prisma.user.update({
+                ...baseUpdate,
+                data: {
+                  ...user,
+                  password: hash,
+                },
+              })
+            )
+          );
+        }
+
+        return prisma.user.update(baseUpdate);
+      });
+    },
+  };
+};
 const UserServiceToken =
   createContextToken<ReturnType<typeof createUserService>>("UserService");
 
