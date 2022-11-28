@@ -22,7 +22,7 @@ const effects = [
   updateUser$,
 ];
 
-export default httpListener({
+export const listener = httpListener({
   middlewares,
   effects,
 });
