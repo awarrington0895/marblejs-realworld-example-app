@@ -1,23 +1,23 @@
-import { combineRoutes, r } from "@marblejs/http";
-import { catchError, map, mergeMap } from "rxjs/operators";
-import * as auth from "@conduit/auth";
 import {
-  Logger,
   LoggerLevel,
   LoggerTag,
   LoggerToken,
   useContext,
 } from "@marblejs/core";
+import { requestValidator$ } from "@marblejs/middleware-io";
+import { combineRoutes, r } from "@marblejs/http";
+import { throwError } from "rxjs";
+import { catchError, map, mergeMap } from "rxjs/operators";
+import { User } from "@prisma/client";
+import * as F from "fp-ts/function";
+
+import * as auth from "@conduit/auth";
+import { errIfEmpty, mapToBody } from "@conduit/util";
 import { PrismaConnectionToken } from "@conduit/db";
 import * as db from "./users.db";
-import { errIfEmpty, mapToBody } from "@conduit/util";
-import * as F from "fp-ts/function";
-import { User } from "@prisma/client";
 import { UserDto } from "./user.dto";
 import { CreateUser } from "./create-user";
-import { requestValidator$ } from "@marblejs/middleware-io";
 import { LoginUser } from "./login-user";
-import { throwError } from "rxjs";
 import { UpdateUser } from "./update-user";
 
 const toUserDto = (user: User): UserDto => ({

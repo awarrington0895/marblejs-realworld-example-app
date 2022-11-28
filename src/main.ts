@@ -1,33 +1,8 @@
-import { createServer, httpListener, r } from "@marblejs/http";
-import { bodyParser$ } from "@marblejs/middleware-body";
-import { logger$ } from "@marblejs/middleware-logger";
+import { createServer } from "@marblejs/http";
 import { IO } from "fp-ts/lib/IO";
-import { map } from "rxjs/operators";
-import { articlesApi$ } from "@conduit/articles";
 import { bindEagerlyTo } from "@marblejs/core";
 import { PrismaConnectionToken, PrismaConnection } from "@conduit/db";
-import { getCurrentUser$, usersApi$, updateUser$ } from "@conduit/users";
-
-const helloWorld$ = r.pipe(
-  r.matchPath("/"),
-  r.matchType("GET"),
-  r.useEffect(req$ => req$.pipe(map(() => ({ body: "Hello, world!" }))))
-);
-
-const middlewares = [logger$(), bodyParser$()];
-
-const effects = [
-  helloWorld$,
-  articlesApi$,
-  getCurrentUser$,
-  usersApi$,
-  updateUser$,
-];
-
-const listener = httpListener({
-  middlewares,
-  effects,
-});
+import listener from "./http.listener";
 
 const server = createServer({
   port: 1337,

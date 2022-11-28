@@ -1,12 +1,13 @@
+import { HttpError, HttpStatus } from "@marblejs/http";
+import * as O from "fp-ts/lib/Option";
 import { defer, Observable, throwError, of } from "rxjs";
 import { map, mergeMap } from "rxjs/operators";
-import * as Article from "./article";
-import * as O from "fp-ts/lib/Option";
-import { CreateArticle } from "./create-article";
 import { PrismaClient, User } from "@prisma/client";
 import slugify from "slugify";
+
+import * as Article from "./article";
+import { CreateArticle } from "./create-article";
 import { UpdateArticle } from "./update-article";
-import { HttpError, HttpStatus } from "@marblejs/http";
 import { ArticleQueryParams } from "./article-query-params";
 
 const includeAuthor = {
