@@ -8,6 +8,9 @@ import { prismaMock } from "./singleton";
 
 const testBed = createHttpTestBed({
   listener,
+  defaultHeaders: {
+    Authorization: "Bearer token",
+  },
 });
 
 // prismaMock.user.findMany.mockResolvedValue([]);
@@ -17,7 +20,6 @@ const mockDb = {};
 const mockPrismaReader = createReader(() => mockDb);
 
 export const useTestBedSetup = createTestBedSetup({
-  // testBed
   testBed,
   dependencies: [bindTo(PrismaConnectionToken)(mockPrismaReader)],
 });

@@ -2,6 +2,14 @@ import { PrismaConnectionToken } from "@conduit/db";
 import { bindTo, createReader } from "@marblejs/core";
 import { pipe } from "fp-ts/function";
 import { useTestBedSetup } from "../test.setup";
+import { HttpStatus } from "@marblejs/http";
+
+jest.mock("@conduit/auth", () => ({
+  __esModule: true,
+  required$: (req: any) => req,
+  optional$: (req: any) => req,
+  generateToken: () => "",
+}));
 
 const mockUserForRegister = {
   user: {
@@ -9,6 +17,15 @@ const mockUserForRegister = {
     email: "jake@jake.jake",
     password: "jakejake",
   },
+};
+
+const mockUser = {
+  id: 1,
+  email: "test@test.com",
+  username: "al",
+  password: "capone",
+  image: null,
+  bio: null,
 };
 
 describe("users", () => {
@@ -39,16 +56,7 @@ describe("users", () => {
       },
     };
 
-    const mockCreatedUser = {
-      id: 1,
-      email: "test@test.com",
-      username: "al",
-      password: "capone",
-      image: null,
-      bio: null,
-    };
-
-    mockDb.user.create.mockResolvedValueOnce(mockCreatedUser);
+    mockDb.user.create.mockResolvedValueOnce(mockUser);
 
     const { request } = await testBedSetup.useTestBed([bindDb(mockDb)]);
 
@@ -60,6 +68,26 @@ describe("users", () => {
     );
 
     expect(response.statusCode).toBe(200);
+  });
+
+  test('GET "/user" retrieves current user', async () => {
+    const mockDb = {
+      user: {
+        findUnique: jest.fn(),
+      },
+    };
+
+    mockDb.user.findUnique.mockResolvedValueOnce(mockUser);
+
+    const { request } = await testBedSetup.useTestBed([bindDb(mockDb)]);
+
+    const response = await pipe(
+      request("GET"),
+      request.withPath("/user"),
+      request.send
+    );
+
+    expect(response.statusCode).toBe(HttpStatus.OK);
   });
 
   afterEach(async () => {
