@@ -1,15 +1,6 @@
 import { PrismaConnectionToken } from "@conduit/db";
-import {
-  bindEagerlyTo,
-  bindTo,
-  createReader,
-  useContext,
-} from "@marblejs/core";
-import { PrismaClient, User } from "@prisma/client";
+import { bindTo, createReader } from "@marblejs/core";
 import { pipe } from "fp-ts/function";
-import { Reader } from "fp-ts/lib/Reader";
-import { DeepMockProxy, mockDeep } from "jest-mock-extended";
-import { prismaMock } from "../singleton";
 import { useTestBedSetup } from "../test.setup";
 
 const mockUserForRegister = {
@@ -23,12 +14,13 @@ const mockUserForRegister = {
 describe("users", () => {
   const testBedSetup = useTestBedSetup();
 
-  // const mockPrismaReader = createReader(() => prismaMock);
+  const bindDb = (mockDb: any) => {
+    const dep = createReader(() => mockDb);
+
+    return bindTo(PrismaConnectionToken)(dep);
+  };
 
   test("GET / hello world", async () => {
-    // const deps = [
-    //     bindEagerlyTo(PrismaConnectionToken)(async () => mockPrismaReader)
-    // ]
     const { request } = await testBedSetup.useTestBed();
 
     const response = await pipe(
@@ -38,16 +30,14 @@ describe("users", () => {
     );
 
     expect(response.statusCode).toBe(200);
-
-    // await finish();
   });
 
   test('POST "/api/users" creates a new user', async () => {
-    const { request, ask } = await testBedSetup.useTestBed();
-
-    const prismaClient = useContext(PrismaConnectionToken)(
-      ask
-    ) as DeepMockProxy<PrismaClient>;
+    const mockDb = {
+      user: {
+        create: jest.fn(),
+      },
+    };
 
     const mockCreatedUser = {
       id: 1,
@@ -58,7 +48,9 @@ describe("users", () => {
       bio: null,
     };
 
-    prismaClient.user.create.mockResolvedValueOnce(mockCreatedUser);
+    mockDb.user.create.mockResolvedValueOnce(mockCreatedUser);
+
+    const { request } = await testBedSetup.useTestBed([bindDb(mockDb)]);
 
     const response = await pipe(
       request("POST"),

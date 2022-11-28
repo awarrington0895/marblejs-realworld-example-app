@@ -10,12 +10,14 @@ const testBed = createHttpTestBed({
   listener,
 });
 
-const mockPrismaReader = createReader(() => prismaMock);
+// prismaMock.user.findMany.mockResolvedValue([]);
+
+const mockDb = {};
+
+const mockPrismaReader = createReader(() => mockDb);
 
 export const useTestBedSetup = createTestBedSetup({
   // testBed
   testBed,
-  dependencies: [
-    bindEagerlyTo(PrismaConnectionToken)(async () => mockPrismaReader),
-  ],
+  dependencies: [bindTo(PrismaConnectionToken)(mockPrismaReader)],
 });
