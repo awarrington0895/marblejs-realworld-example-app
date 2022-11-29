@@ -31,11 +31,11 @@ const getCurrentUser$ = r.pipe(
   r.matchType("GET"),
   r.use(auth.required$),
   r.useEffect((req$, ctx) => {
-    const userService = useContext(UserServiceToken)(ctx.ask);
+    const users = useContext(UserServiceToken)(ctx.ask);
 
     return req$.pipe(
       map(req => req.user?.username),
-      mergeMap(userService.findByUsername$),
+      mergeMap(users.findByUsername$),
       errIfEmpty(),
       map(toUserDto),
       mapToBody()
@@ -47,12 +47,12 @@ const registerUser$ = r.pipe(
   r.matchPath("/"),
   r.matchType("POST"),
   r.useEffect((req$, { ask }) => {
-    const userService = useContext(UserServiceToken)(ask);
+    const users = useContext(UserServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: CreateUser }),
       map(req => req.body as CreateUser),
-      mergeMap(userService.createUser$),
+      mergeMap(users.createUser$),
       map(toUserDto),
       mapToBody()
     );
@@ -64,7 +64,7 @@ const updateUser$ = r.pipe(
   r.matchType("PUT"),
   r.use(auth.required$),
   r.useEffect((req$, { ask }) => {
-    const userService = useContext(UserServiceToken)(ask);
+    const users = useContext(UserServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: UpdateUser }),
@@ -73,7 +73,7 @@ const updateUser$ = r.pipe(
         updateUser: req.body as UpdateUser,
       })),
       mergeMap(({ userId, updateUser }) =>
-        userService.updateUser$(userId, updateUser)
+        users.updateUser$(userId, updateUser)
       ),
       map(toUserDto),
       mapToBody()

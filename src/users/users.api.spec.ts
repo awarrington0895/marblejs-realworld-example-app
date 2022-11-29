@@ -3,11 +3,18 @@ import { bindTo, createReader } from "@marblejs/core";
 import { pipe } from "fp-ts/function";
 import { useTestBedSetup } from "../test.setup";
 import { HttpStatus } from "@marblejs/http";
+import { map, Observable } from "rxjs";
 
 jest.mock("@conduit/auth", () => ({
   __esModule: true,
-  required$: (req: any) => req,
-  optional$: (req: any) => req,
+  required$: (req$: Observable<any>) =>
+    req$.pipe(
+      map(req => {
+        req.user = { id: 1 };
+        return req;
+      })
+    ),
+  optional$: (req$: Observable<any>) => req$,
   generateToken: () => "",
 }));
 
@@ -87,6 +94,38 @@ describe("users", () => {
       request.send
     );
 
+    expect(response.statusCode).toBe(HttpStatus.OK);
+  });
+
+  test('PUT "/user" updates the user record', async () => {
+    const mockDb = {
+      user: {
+        update: jest.fn(),
+      },
+    };
+
+    mockDb.user.update.mockResolvedValueOnce(mockUser);
+
+    const { request } = await testBedSetup.useTestBed([bindDb(mockDb)]);
+
+    const response = await pipe(
+      request("PUT"),
+      request.withPath("/user"),
+      request.withBody({
+        user: {
+          username: "test",
+        },
+      }),
+      request.send
+    );
+
+    expect(response.body).toEqual({
+      user: {
+        email: mockUser.email,
+        username: mockUser.username,
+        token: "",
+      },
+    });
     expect(response.statusCode).toBe(HttpStatus.OK);
   });
 
