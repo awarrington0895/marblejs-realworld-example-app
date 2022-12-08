@@ -2,16 +2,14 @@ import { useContext } from "@marblejs/core";
 import { combineRoutes, HttpStatus, r } from "@marblejs/http";
 import { requestValidator$, t } from "@marblejs/middleware-io";
 import { map, mergeMap } from "rxjs/operators";
-import * as F from "fp-ts/function";
 
 import * as auth from "@conduit/auth";
 import { mapToBody, errIfEmpty } from "@conduit/util";
-import { PrismaConnectionToken } from "@conduit/db";
-import * as db from "./articles.db";
 import * as ArticleResponse from "./article.response";
 import { CreateArticle } from "./create-article";
 import { UpdateArticle } from "./update-article";
 import { ArticleQueryParams } from "./article-query-params";
+import { ArticleServiceToken } from "./articles.service";
 
 const ArticleParams = t.type({ slug: t.string });
 
@@ -22,11 +20,12 @@ const getArticles$ = r.pipe(
   r.matchType("GET"),
   r.use(auth.optional$),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const articles = useContext(ArticleServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ query: ArticleQueryParams }),
-      mergeMap(req => db.getAllArticles$(prismaClient)(req.query)),
+      map(req => req.query),
+      mergeMap(articles.getAllArticles$),
       map(ArticleResponse.fromArticles),
       mapToBody()
     );
@@ -37,12 +36,12 @@ const getArticle$ = r.pipe(
   r.matchPath("/:slug"),
   r.matchType("GET"),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const articles = useContext(ArticleServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ params: ArticleParams }),
       map(req => req.params.slug),
-      mergeMap(F.pipe(prismaClient, db.getArticle$)),
+      mergeMap(articles.getArticle$),
       errIfEmpty(),
       map(article => ({ article })),
       mapToBody()
@@ -55,13 +54,11 @@ const postArticle$ = r.pipe(
   r.matchType("POST"),
   r.use(auth.required$),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const articles = useContext(ArticleServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ body: CreateArticle }),
-      mergeMap(req =>
-        db.createArticle$(prismaClient)(req.body, req.user.username)
-      ),
+      mergeMap(req => articles.createArticle$(req.body, req.user.username)),
       map(createdArticle => ({ article: createdArticle })),
       mapToBody()
     );
@@ -73,7 +70,7 @@ const putArticle$ = r.pipe(
   r.matchType("PUT"),
   r.use(auth.required$),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const articles = useContext(ArticleServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ params: ArticleParams, body: UpdateArticle }),
@@ -82,9 +79,7 @@ const putArticle$ = r.pipe(
         username: req.user.username,
         updateArticle: req.body,
       })),
-      mergeMap(({ slug, username, updateArticle }) =>
-        db.updateArticle$(prismaClient)(slug, username, updateArticle)
-      ),
+      mergeMap(articles.updateArticle$),
       map(article => ({ article })),
       mapToBody()
     );
@@ -96,12 +91,12 @@ const deleteArticle$ = r.pipe(
   r.matchType("DELETE"),
   r.use(auth.required$),
   r.useEffect((req$, { ask }) => {
-    const prismaClient = useContext(PrismaConnectionToken)(ask);
+    const articles = useContext(ArticleServiceToken)(ask);
 
     return req$.pipe(
       requestValidator$({ params: ArticleParams }),
       map(req => req.params.slug),
-      mergeMap(F.pipe(prismaClient, db.deleteArticle$)),
+      mergeMap(articles.deleteArticle$),
       map(() => ({ status: HttpStatus.NO_CONTENT }))
     );
   })
